@@ -8,7 +8,7 @@ ROOT = Path(__file__).parents[1]
 def test_manifest_is_valid_json():
     data = json.loads((ROOT / "custom_components/app_papas/manifest.json").read_text())
     assert data["domain"] == "app_papas"
-    assert data["version"] == "1.1.2"
+    assert data["version"] == "1.1.3"
     assert data["config_flow"] is True
 
 

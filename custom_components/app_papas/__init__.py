@@ -19,6 +19,7 @@ from .const import (
 from .defaults import default_shopping
 from .frontend import async_setup_frontend
 from .storage import AppPapasStore
+from . import sensor as _sensor  # noqa: F401
 
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
