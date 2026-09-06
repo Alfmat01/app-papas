@@ -1,36 +1,12 @@
 const DOMAIN = "app_papas";
 const API = `/api/${DOMAIN}`;
 
-function haFetch(hass, path, init = {}) {
-  if (!hass || typeof hass.fetchWithAuth !== "function") {
-    throw new Error("La sesión de Home Assistant todavía no está disponible.");
-  }
-  return hass.fetchWithAuth(path, init);
-}
-
-const PLAN = [
-  ["Día 1: Encuentra tu Punto Débil", "d1_problema", "Mi mayor problema es", "Ej: Me derrumbo por la noche..."],
-  ["Día 1: Encuentra tu Punto Débil", "d1_cuando", "¿Cuándo suelo desmoronarme?", "Ej: 10:30 pm, en la oficina..."],
-  ["Día 2: La Regla de la Palma", "d2_proteinas", "Mis 3 proteínas rápidas favoritas", "Ej: Huevos, Atún, Yogur Griego"],
-  ["Día 3: El Interruptor de Líquidos", "d3_bebida", "¿Qué bebida azucarada voy a sustituir esta semana?", "Ej: Refresco de cola por agua con limón"],
-  ["Día 4: Cocina Fantasma", "d4_rapida1", "Mi Comida Rápida 1 (Papá / Niñas)", "Ej: Revuelto de 3 huevos + arroz / Revuelto con jamón y queso", true],
-  ["Día 4: Cocina Fantasma", "d4_rapida2", "Mi Comida Rápida 2 (Papá / Niñas)", "Ej: Atún con frijoles y aguacate / Atún con maíz en sándwich", true],
-  ["Día 4: Cocina Fantasma", "d4_rapida3", "Mi Comida Rápida 3 (Papá / Niñas)", "Ej: Huevos duros + yogurt / Tostada con aguacate", true],
-  ["Día 5: Antirrestaurante", "d5_pedido", "Mi pedido saludable de comida rápida favorito", "Ej: Dos tacos de carne y agua, sin refresco"],
-  ["Día 6: Protocolo de Reinicio", "d6_reinicio", "¿Qué haré si me salgo del camino?", "Ej: Beber agua, respirar hondo y decidir mi próxima comida sana"],
-  ["Día 7: Tablero de Operaciones", "d7_problema", "Mi problema principal detectado", "Ej: Comer en la cama a medianoche"],
-  ["Día 7: Tablero de Operaciones", "d7_bebida", "Mi bebida de emergencia (para no beber calorías)", "Ej: Agua con limón"],
-];
-
 const DAYS = [
-  ["lunes", "Lunes"], ["martes", "Martes"], ["miercoles", "Miércoles"], ["jueves", "Jueves"],
-  ["viernes", "Viernes"], ["sabado", "Sábado"], ["domingo", "Domingo"]
+  ["lunes", "Lunes"], ["martes", "Martes"], ["miercoles", "Miércoles"],
+  ["jueves", "Jueves"], ["viernes", "Viernes"], ["sabado", "Sábado"], ["domingo", "Domingo"]
 ];
-const MEALS = [["desayuno", "Desayuno"], ["almuerzo", "Almuerzo"], ["cena", "Cena"]];
-const SHOPPING = [
-  ["proteina", "Proteína"], ["carbohidratos", "Carbohidratos"],
-  ["verduras_frutas", "Verduras / Frutas"], ["extras", "Extras"]
-];
+const MEALS = [["desayuno", "Desayuno", "🍳"], ["almuerzo", "Almuerzo", "🍲"], ["cena", "Cena", "🌙"]];
+const SHOPPING = [["proteina", "Proteína", "🥩"], ["carbohidratos", "Carbohidratos", "🍚"], ["verduras_frutas", "Verduras / Frutas", "🥦"], ["extras", "Extras", "🧂"]];
 const CHECKLIST = [
   ["proteina", "¿Construí mis comidas principales alrededor de una proteína?"],
   ["agua", "¿Bebí suficiente agua hoy?"],
@@ -41,267 +17,222 @@ const CHECKLIST = [
   ["satisfecho", "¿Dejé de comer cuando estaba satisfecho en lugar de repleto?"],
   ["reinicio", "Si me salí del camino, ¿volví a él con mi siguiente comida?"]
 ];
+const PLAN = [
+  ["Día 1", "Encuentra tu Punto Débil", "d1_problema", "Mi mayor problema es", "Ej: Me derrumbo por la noche...", false],
+  ["Día 1", "Encuentra tu Punto Débil", "d1_cuando", "¿Cuándo suelo desmoronarme?", "Ej: 10:30 pm, en la oficina...", false],
+  ["Día 2", "La Regla de la Palma", "d2_proteinas", "Mis 3 proteínas rápidas favoritas", "Ej: Huevos, Atún, Yogur Griego", false],
+  ["Día 3", "El Interruptor de Líquidos", "d3_bebida", "¿Qué bebida azucarada voy a sustituir esta semana?", "Ej: Refresco de cola por agua con limón", false],
+  ["Día 4", "Cocina Fantasma", "d4_rapida1", "Mi Comida Rápida 1 (Papá / Niñas)", "Ej: Revuelto de 3 huevos + arroz / Revuelto con jamón y queso", true],
+  ["Día 4", "Cocina Fantasma", "d4_rapida2", "Mi Comida Rápida 2 (Papá / Niñas)", "Ej: Atún con frijoles y aguacate / Atún con maíz en sándwich", true],
+  ["Día 4", "Cocina Fantasma", "d4_rapida3", "Mi Comida Rápida 3 (Papá / Niñas)", "Ej: Huevos duros + yogurt / Tostada con aguacate", true],
+  ["Día 5", "Antirrestaurante", "d5_pedido", "Mi pedido saludable de comida rápida favorito", "Ej: Dos tacos de carne y agua, sin refresco", false],
+  ["Día 6", "Protocolo de Reinicio", "d6_reinicio", "¿Qué haré si me salgo del camino?", "Ej: Beber agua, respirar hondo y decidir mi próxima comida sana", false],
+  ["Día 7", "Tablero de Operaciones", "d7_problema", "Mi problema principal detectado", "Ej: Comer en la cama a medianoche", false],
+  ["Día 7", "Tablero de Operaciones", "d7_bebida", "Mi bebida de emergencia (para no beber calorías)", "Ej: Agua con limón", false]
+];
 
 function localDate() {
   const d = new Date();
   const off = d.getTimezoneOffset() * 60000;
   return new Date(d.getTime() - off).toISOString().slice(0, 10);
 }
+function escapeHtml(v="") { return String(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"); }
+function dayLabel(key) { return DAYS.find(x => x[0] === key)?.[1] || key; }
+function weekdayKey(value) { const idx = new Date(`${value}T12:00:00`).getDay(); return DAYS[(idx + 6) % 7][0]; }
 
 class AppPapasPanel extends HTMLElement {
-  set hass(value) {
-    this._hass = value;
-  }
+  set hass(value) { this._hass = value; }
 
   connectedCallback() {
-    this.attachShadow({mode: "open"});
+    if (this.shadowRoot) return;
+    this.attachShadow({mode:"open"});
     this.state = this.initialState();
+    this.stats = {today_score:0, streak:0, shopping_pending:0, history:[]};
     this.day = localDate();
-    this.tab = "hoy";
+    this.tab = "inicio";
     this.busy = true;
+    this.error = "";
     this.render();
     this.load();
   }
 
   initialState() {
     return {
-      settings: {active_tab: "hoy"},
+      schema_version: 2,
+      settings: {active_tab:"inicio", adult_name:"Papá", children:["Niñas"], notifications_enabled:false, notify_service:""},
+      plan: Object.fromEntries(PLAN.map(x => [x[2], ""])),
       days: {},
-      plan: Object.fromEntries(PLAN.map(([, id]) => [id, ""])),
-      menu: Object.fromEntries(DAYS.map(([d]) => [d, Object.fromEntries(MEALS.map(([m]) => [m, {papa: "", ninas: ""}]))])),
-      shopping: Object.fromEntries(SHOPPING.map(([cat]) => [cat, []]))
+      menu: Object.fromEntries(DAYS.map(([d]) => [d, Object.fromEntries(MEALS.map(([m]) => [m,{papa:"",ninas:""}]))])),
+      shopping: Object.fromEntries(SHOPPING.map(([c]) => [c, []])),
+      emergency_meals: []
     };
   }
 
   async load() {
-    if (!this._hass || typeof this._hass.fetchWithAuth !== "function") {
-      this.busy = false;
-      this.error = "Esperando a que Home Assistant complete la sesión…";
-      this.render();
-      return;
-    }
     try {
-      const res = await haFetch(this._hass, `${API}/data`);
-      this.state = this.mergeState(this.initialState(), await res.json());
-      this.tab = this.state.settings?.active_tab || "hoy";
+      if (!this._hass || typeof this._hass.fetchWithAuth !== "function") throw new Error("Esperando la sesión de Home Assistant…");
+      const [dataRes, statsRes] = await Promise.all([
+        this._hass.fetchWithAuth(`${API}/data`),
+        this._hass.fetchWithAuth(`${API}/stats`)
+      ]);
+      if (!dataRes.ok) throw new Error(`No se pudieron cargar los datos (${dataRes.status})`);
+      this.state = this.mergeState(this.initialState(), await dataRes.json());
+      if (statsRes.ok) this.stats = await statsRes.json();
+      this.tab = this.state.settings.active_tab || "inicio";
       this.busy = false;
+      this.error = "";
       this.render();
-    } catch (err) {
+    } catch (e) {
       this.busy = false;
-      this.error = err.message;
+      this.error = e.message || "No se pudo conectar con Home Assistant.";
       this.render();
     }
   }
 
-  mergeState(base, incoming) {
-    const src = incoming || {};
-    const result = {...base, ...src};
-    result.settings = {...base.settings, ...(src.settings || {})};
-    result.days = {...base.days, ...(src.days || {})};
-    result.plan = {...base.plan, ...(src.plan || {})};
-    result.menu = {...base.menu};
-    for (const [day, meals] of Object.entries(src.menu || {})) {
-      result.menu[day] = {...(base.menu[day] || {}), ...(meals || {})};
-      for (const [meal, value] of Object.entries(meals || {})) {
-        result.menu[day][meal] = {papa: "", ninas: "", ...(base.menu[day]?.[meal] || {}), ...(value || {})};
-      }
+  mergeState(base, src) {
+    src = src || {};
+    const out = {...base, ...src};
+    out.settings = {...base.settings, ...(src.settings || {})};
+    out.plan = {...base.plan, ...(src.plan || {})};
+    out.days = {...base.days, ...(src.days || {})};
+    out.menu = {...base.menu};
+    for (const [d, meals] of Object.entries(src.menu || {})) {
+      out.menu[d] = {...(base.menu[d] || {}), ...(meals || {})};
+      for (const [m, v] of Object.entries(meals || {})) out.menu[d][m] = {papa:"",ninas:"",...(base.menu[d]?.[m] || {}),...(v || {})};
     }
-    result.shopping = {...base.shopping, ...(src.shopping || {})};
-    for (const [cat] of Object.entries(base.shopping)) {
-      result.shopping[cat] = Array.isArray(src.shopping?.[cat]) ? src.shopping[cat] : [];
-    }
-    return result;
+    out.shopping = {...base.shopping};
+    for (const [c] of SHOPPING) out.shopping[c] = Array.isArray(src.shopping?.[c]) ? src.shopping[c] : base.shopping[c];
+    out.emergency_meals = Array.isArray(src.emergency_meals) ? src.emergency_meals : [];
+    return out;
   }
 
-  async save() {
-    if (this._saveInFlight) {
-      this._savePending = true;
-      return;
-    }
+  async saveData() {
+    if (this._saveInFlight) { this._savePending = true; return; }
     this._saveInFlight = true;
     try {
-      const res = await haFetch(this._hass, `${API}/data`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(this.state),
-      });
+      const res = await this._hass.fetchWithAuth(`${API}/data`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(this.state)});
       if (!res.ok) throw new Error(`Error guardando datos (${res.status})`);
       this.state = this.mergeState(this.initialState(), await res.json());
-    } catch (err) {
-      this.error = err.message || "No se pudieron guardar los datos.";
-      this.render();
-    } finally {
-      this._saveInFlight = false;
-      if (this._savePending) {
-        this._savePending = false;
-        this.save();
-      }
-    }
+      this.error = "";
+    } catch (e) { this.error = e.message || "No se pudieron guardar los datos."; this.showToast(this.error, true); }
+    finally { this._saveInFlight = false; if (this._savePending) { this._savePending = false; this.saveData(); } }
   }
 
-  scheduleSaveDay() {
-    clearTimeout(this._daySaveTimer);
-    this._daySaveTimer = setTimeout(() => this.saveDay(), 500);
-  }
+  scheduleDataSave() { clearTimeout(this._dataTimer); this._dataTimer=setTimeout(()=>this.saveData(),600); }
 
   async saveDay() {
-    this.state ||= this.initialState();
-    this.state.days = this.state.days || {};
-    if (this._daySaveInFlight) {
-      this._daySavePending = true;
-      return;
-    }
-    this._daySaveInFlight = true;
+    if (this._dayInFlight) { this._dayPending=true; return; }
+    this._dayInFlight=true;
     try {
-      const res = await haFetch(this._hass, `${API}/day/${this.day}`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(this.state.days[this.day] || {}),
-      });
+      const res = await this._hass.fetchWithAuth(`${API}/day/${this.day}`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(this.state.days[this.day] || this.emptyDay())});
       if (!res.ok) throw new Error(`Error guardando el día (${res.status})`);
       this.state.days[this.day] = await res.json();
-    } catch (err) {
-      this.error = err.message || "No se pudo guardar el día.";
-      this.render();
-    } finally {
-      this._daySaveInFlight = false;
-      if (this._daySavePending) {
-        this._daySavePending = false;
-        this.saveDay();
-      }
-    }
+      this.error="";
+      await this.refreshStats(false);
+    } catch(e) { this.error=e.message || "No se pudo guardar el día."; this.showToast(this.error,true); }
+    finally { this._dayInFlight=false; if(this._dayPending){this._dayPending=false;this.saveDay();} }
   }
+  scheduleDaySave(){clearTimeout(this._dayTimer);this._dayTimer=setTimeout(()=>this.saveDay(),550);}
 
-  setTab(tab) { this.tab = tab; this.state.settings.active_tab = tab; this.save(); }
-
-  dayData() {
-    this.state.days = this.state.days || {};
-    this.state.days[this.day] ||= {desayuno:"", almuerzo:"", cena:"", notas:"", checklist:{}};
-    this.state.days[this.day].checklist ||= {};
-    return this.state.days[this.day];
+  async refreshStats(renderAfter=true) {
+    try { const r=await this._hass.fetchWithAuth(`${API}/stats`); if(r.ok) this.stats=await r.json(); }
+    catch(_) {}
+    if(renderAfter) this.render();
   }
+  emptyDay(){return {desayuno:"",almuerzo:"",cena:"",notas:"",checklist:{}};}
+  dayData(){if(!this.state.days[this.day])this.state.days[this.day]=this.emptyDay();this.state.days[this.day].checklist ||= {};return this.state.days[this.day];}
+  score(){return CHECKLIST.reduce((n,[k])=>n+(this.dayData().checklist[k]?1:0),0);}
+  pendingShopping(){return SHOPPING.reduce((n,[c])=>n+(this.state.shopping[c]||[]).filter(x=>!x.checked).length,0);}
 
-  setDayField(field, value) { this.dayData()[field] = value; this.saveDay(); }
-  setPlan(id, value) { this.state.plan[id] = value; this.save(); }
-  setMenu(day, meal, person, value) { this.state.menu[day][meal][person] = value; this.save(); }
-  toggleShop(cat, id) {
-    const item = this.state.shopping[cat].find(x => x.id === id);
-    if (item) item.checked = !item.checked;
-    this.save();
-  }
+  async callService(service, data={}) { if (!this._hass?.callService) return; await this._hass.callService(DOMAIN, service, data); await this.load(); }
 
-  addProduct() {
-    const input = this.shadowRoot.querySelector("#new-product");
-    const name = input.value.trim();
-    if (!name) return;
-    this.state.shopping.extras.push({id:`custom_${Date.now()}`, name, checked:false, source:"custom"});
-    input.value = "";
-    this.save();
-  }
+  async resetToday(){this.state.days[this.day]=this.emptyDay();await this.saveDay();this.render();}
+  async copyWeek(){await this.callService("copy_week",{source_offset:7});}
+  async generateShopping(){await this.callService("generate_shopping",{});}
+  async completeChecklist(){const d=this.dayData();d.checklist=Object.fromEntries(CHECKLIST.map(x=>[x[0],true]));await this.saveDay();this.render();}
+  async notifyToday(){try{await this.callService("notify_today",{});this.showToast("Resumen enviado.");}catch(e){this.showToast(e.message||"No se pudo enviar.",true);}}
 
-  toggleCheck(key) { const d = this.dayData(); d.checklist[key] = !d.checklist[key]; this.saveDay(); }
+  setTab(tab){this.tab=tab;this.state.settings.active_tab=tab;this.render();this.scheduleDataSave();}
 
-  resetToday() {
-    const d = this.dayData();
-    d.desayuno = d.almuerzo = d.cena = d.notas = ""; d.checklist = {};
-    this.saveDay();
-  }
+  addProduct(){const input=this.shadowRoot.querySelector("#new-product");const cat=this.shadowRoot.querySelector("#new-category")?.value||"extras";const name=input?.value.trim();if(!name)return;this.state.shopping[cat].push({id:`manual_${Date.now()}`,name,checked:false,source:"manual"});input.value="";this.render();this.scheduleDataSave();}
+  removeProduct(cat,id){this.state.shopping[cat]=(this.state.shopping[cat]||[]).filter(x=>x.id!==id);this.render();this.scheduleDataSave();}
+  toggleShop(cat,id,checked){const item=(this.state.shopping[cat]||[]).find(x=>x.id===id);if(item){item.checked=checked;this.render();this.scheduleDataSave();}}
+  toggleCheck(key,checked){this.dayData().checklist[key]=checked;this.render();this.scheduleDaySave();}
+  setDayField(field,value){this.dayData()[field]=value;this.scheduleDaySave();}
+  setPlan(id,value){this.state.plan[id]=value;this.scheduleDataSave();}
+  setMenu(d,m,p,value){this.state.menu[d][m][p]=value;this.scheduleDataSave();}
+  setDay(v){if(!v)return;this.day=v;this.render();}
 
-  async generateShopping() {
-    if (!this._hass || !this._hass.callService) return;
-    try { await this._hass.callService(DOMAIN, "generate_shopping"); await this.load(); } catch (_) {}
-  }
+  async useEmergency(text){const parts=text.split("/").map(x=>x.trim());const d=this.dayData();d.almuerzo=parts.length>1?`Papá: ${parts[0]} | Niñas: ${parts.slice(1).join(" / ")}`:text;await this.saveDay();this.setTab("hoy");}
 
-  score() { if (!this.state) return 0; return CHECKLIST.reduce((n,[k]) => n + (this.dayData().checklist[k] ? 1 : 0), 0); }
-
-  render() {
-    if (!this.shadowRoot) return;
-    this.shadowRoot.innerHTML = `
-      <style>${this.css()}</style>
-      <div class="app">
-        <header>
-          <div><div class="eyebrow">APP DE ALIMENTACIÓN</div><h1>Para papás ocupados</h1><p>Cocina una vez, come bien tú y que tus hijas aprendan de ti.</p></div>
-          <div class="score">Hoy <b>${this.score()}/8</b></div>
-        </header>
-        <nav>${this.nav()}</nav>
-        <main>${this.busy ? `<div class="loading">Guardando…</div>` : (this.error ? `<div class="error">${this.error}</div>` : this.content())}</main>
-        <footer>“Cocinad y comed juntos, sé el mejor ejemplo que tus hijas pueden ver” — Alfonso</footer>
-      </div>`;
+  render(){
+    if(!this.shadowRoot)return;
+    this.shadowRoot.innerHTML=`<style>${this.css()}</style><div class="app ${this.state.settings.theme==='dark'?'dark':''}">
+      <header><div><div class="eyebrow">APP DE ALIMENTACIÓN</div><h1>Para papás ocupados</h1><p>Cocina una vez, come bien tú y que tus hijas aprendan de ti.</p></div><div class="header-actions"><div class="score">Hoy <b>${this.score()}/8</b></div><button class="icon-btn" id="theme">${this.state.settings.theme==='dark'?"☀️":"🌙"}</button></div></header>
+      <nav>${this.nav()}</nav><main>${this.busy?`<div class="loading">Cargando…</div>`:this.error?`<div class="error"><b>No se pudo cargar la aplicación.</b><div>${escapeHtml(this.error)}</div><button class="primary" id="retry">Reintentar</button></div>`:this.content()}</main>
+      <footer>“Cocinad y comed juntos, sé el mejor ejemplo que tus hijas pueden ver” — Alfonso</footer><div id="toast" class="toast"></div></div>`;
     this.bind();
   }
 
-  nav() {
-    return [["hoy","📅 Hoy"],["inicio","🏠 Inicio"],["plan","📅 Plan 7 Días"],["menu","🍽️ Menú"],["compra","🛒 Compra"],["checklist","📋 Checklist"]]
-      .map(([k,l]) => `<button class="tab ${this.tab===k?"active":""}" data-tab="${k}">${l}</button>`).join("");
+  nav(){return [["inicio","🏠 Inicio"],["hoy","📅 Hoy"],["menu","🍽️ Menú"],["compra","🛒 Compra"],["checklist","📋 Progreso"],["plan","🧭 Plan 7 días"]].map(([k,l])=>`<button class="tab ${this.tab===k?"active":""}" data-tab="${k}">${l}</button>`).join("");}
+
+  content(){switch(this.tab){case"hoy":return this.todayPage();case"menu":return this.menuPage();case"compra":return this.shoppingPage();case"checklist":return this.progressPage();case"plan":return this.planPage();default:return this.homePage();}}
+
+  homePage(){const today=this.dayData();const wk=weekdayKey(this.day);const next=this.state.menu[wk]||{};const pending=this.pendingShopping();const history=this.stats.history||[];return `<section>
+    <div class="hero"><div><span class="pill">${dayLabel(wk)} · ${this.day}</span><h2>Tu centro de operaciones</h2><p class="muted">Menú, comida real, compra y progreso en un solo sitio.</p></div><div class="hero-score"><span>${this.score()}/8</span><small>objetivos de hoy</small></div></div>
+    <div class="grid four"><button class="metric" data-tab="hoy"><span>🍽️</span><strong>${registered}</strong><small>comidas registradas</small></button><button class="metric" data-tab="compra"><span>🛒</span><strong>${pending}</strong><small>productos pendientes</small></button><div class="metric"><span>🔥</span><strong>${this.stats.streak||0}</strong><small>días de racha</small></div><div class="metric"><span>📈</span><strong>${this.avg7()}</strong><small>media últimos 7</small></div></div>
+    <div class="grid two"><div class="card"><div class="card-title"><h3>🍴 Hoy en el menú</h3><button class="link-btn" data-tab="menu">Editar menú</button></div>${MEALS.map(([m,label,icon])=>`<div class="meal-row"><span class="meal-icon">${icon}</span><div><b>${label}</b><div class="meal-text">${escapeHtml(next[m]?.papa||"Sin planificar")}</div><small>Niñas: ${escapeHtml(next[m]?.ninas||"Sin adaptar")}</small></div></div>`).join("")}</div>
+      <div class="card"><div class="card-title"><h3>✅ Últimos 7 días</h3><button class="link-btn" data-tab="checklist">Ver progreso</button></div><div class="history">${(history.slice(-7)||[]).map(x=>`<div><span>${escapeHtml(x.date.slice(5))}</span><div class="bar"><i style="width:${(x.score/8)*100}%"></i></div><b>${x.score}/8</b></div>`).join("")}</div></div></div>
+    <div class="grid two"><div class="card"><h3>🚨 Comidas de emergencia</h3><p class="muted">Para esos días en los que no hay tiempo.</p>${this.emergencyList(3)}</div><div class="card"><h3>🛒 Acciones rápidas</h3><div class="action-grid"><button class="primary" id="gen-shop">Generar compra</button><button class="secondary" id="copy-week">Copiar semana</button><button class="secondary" id="complete-check">Completar checklist</button>${this.state.settings.notify_service?`<button class="secondary" id="notify">Enviar resumen</button>`:""}</div><p class="muted small">${this.state.settings.adult_name||"Papá"} · ${(this.state.settings.children||["Niñas"]).join(", ")}</p></div></div>
+  </section>`;}
+
+  avg7(){const h=(this.stats.history||[]).slice(-7);if(!h.length)return "0/8";return `${(h.reduce((n,x)=>n+x.score,0)/h.length).toFixed(1)}/8`;}
+  emergencyList(limit){const entries=["d4_rapida1","d4_rapida2","d4_rapida3"].map(k=>this.state.plan[k]).filter(Boolean).slice(0,limit);if(!entries.length)return `<div class="empty">Aún no has definido comidas de emergencia en el Plan 7 días.</div>`;return entries.map((x,i)=>`<div class="emergency"><b>⚡ Opción ${i+1}</b><span>${escapeHtml(x)}</span><button class="link-btn" data-emergency="${escapeHtml(x)}">Usar hoy</button></div>`).join("");}
+
+  todayPage(){const d=this.dayData();return `<section><div class="head-row"><div><h2>📅 ¿Qué comemos hoy?</h2><p class="muted">Registra lo que realmente has comido. Se guarda automáticamente.</p></div><div class="date-row"><label>Fecha</label><input id="date" type="date" value="${this.day}"></div></div>
+    <div class="grid two"><div class="card featured"><div class="card-title"><h3>Plan del día</h3><button class="link-btn" data-tab="menu">Editar menú</button></div>${MEALS.map(([m,label,icon])=>{const wk=weekdayKey(this.day);const v=this.state.menu[wk]?.[m]||{};return `<div class="planned"><span>${icon}</span><div><b>${label}</b><p>${escapeHtml(v.papa||"Sin planificar")}</p><small>Niñas: ${escapeHtml(v.ninas||"Sin adaptar")}</small></div></div>`}).join("")}</div>
+    <div class="card"><h3>📝 Lo que realmente comí</h3>${this.area("Desayuno","desayuno",d.desayuno,"Café, huevos y tostadas…")}${this.area("Almuerzo","almuerzo",d.almuerzo,"Pollo asado y ensalada…")}${this.area("Cena","cena",d.cena,"Sopa de verduras y pan…")}${this.area("Notas","notas",d.notas,"Opcional…")}</div></div>
+    <div class="card"><div class="card-title"><h3>🚨 Una salida rápida</h3><button class="link-btn" data-tab="plan">Editar emergencias</button></div><div class="emergency-grid">${this.emergencyList(3)}</div></div>
+    <div class="actions"><button class="secondary" id="reset-day">Reiniciar día</button></div></section>`;}
+  area(label,field,value,ph){return `<label>${label}<textarea data-day-field="${field}" placeholder="${escapeHtml(ph)}">${escapeHtml(value)}</textarea></label>`;}
+
+  menuPage(){let html=`<section><div class="head-row"><div><h2>🍽️ Menú semanal</h2><p class="muted">Una sola base para todos, con adaptación para ${escapeHtml((this.state.settings.children||["Niñas"]).join(", "))}.</p></div><div class="action-row"><button class="secondary" id="copy-week">Copiar semana anterior</button><button class="secondary" id="gen-shop">Generar compra</button></div></div><div class="table-wrap"><table><thead><tr><th>Día</th>${MEALS.map(m=>`<th>${m[2]} ${m[1]}</th>`).join("")}</tr></thead><tbody>`;
+    DAYS.forEach(([d,label])=>{html+=`<tr><th>${label}</th>`;MEALS.forEach(([m])=>{const v=this.state.menu[d]?.[m]||{papa:"",ninas:""};html+=`<td><div class="person papa">${escapeHtml(this.state.settings.adult_name||"PAPÁ")}</div><textarea data-menu="${d}|${m}|papa">${escapeHtml(v.papa)}</textarea><div class="person ninas">${escapeHtml((this.state.settings.children||["Niñas"]).join(" / "))}</div><textarea data-menu="${d}|${m}|ninas">${escapeHtml(v.ninas)}</textarea></td>`});html+=`</tr>`});
+    return html+`</tbody></table></div><div class="tip">💡 Los cambios se guardan automáticamente. Puedes deslizar horizontalmente en móvil.</div></section>`;}
+
+  shoppingPage(){let total=this.pendingShopping();let html=`<section><div class="head-row"><div><h2>🛒 Lista de la compra</h2><p class="muted">${total} productos pendientes. Los productos generados desde el menú se mantienen separados de los personalizados.</p></div><div class="action-row"><button class="primary" id="gen-shop">Generar desde menú</button></div></div>`;
+    SHOPPING.forEach(([cat,label,icon])=>{const items=this.state.shopping[cat]||[];html+=`<div class="card"><div class="card-title"><h3>${icon} ${label}</h3><span class="badge">${items.filter(x=>!x.checked).length} pendientes</span></div><ul class="shopping-list">${items.map(item=>`<li><label><input type="checkbox" data-shop="${cat}|${item.id}" ${item.checked?"checked":""}><span class="${item.checked?"done":""}">${escapeHtml(item.name)}</span></label>${["manual","custom"].includes(item.source)?`<button class="delete" data-remove="${cat}|${item.id}" title="Eliminar">✕</button>`:""}</li>`).join("")}</ul>${!items.length?`<div class="empty">Sin productos.</div>`:""}</div>`});
+    return html+`<div class="card"><h3>➕ Añadir producto</h3><div class="add-row"><input id="new-product" placeholder="Ej: Leche entera"><select id="new-category">${SHOPPING.map(([k,l])=>`<option value="${k}">${l}</option>`).join("")}</select><button class="primary" id="add-product">Añadir</button></div></div></section>`;}
+
+  progressPage(){const d=this.dayData();return `<section><div class="hero"><div><h2>📋 Progreso</h2><p class="muted">No necesitas hacerlo perfecto: busca mejorar poco a poco.</p></div><div class="hero-score"><span>${this.score()}/8</span><small>hoy</small></div></div><div class="grid three"><div class="metric"><span>🔥</span><strong>${this.stats.streak||0}</strong><small>racha</small></div><div class="metric"><span>📊</span><strong>${this.avg7()}</strong><small>media 7 días</small></div><div class="metric"><span>🛒</span><strong>${this.stats.shopping_pending??this.pendingShopping()}</strong><small>compra pendiente</small></div></div><div class="card featured"><ul class="checklist large">${CHECKLIST.map(([k,t])=>`<li><label><input type="checkbox" data-check="${k}" ${d.checklist[k]?"checked":""}><span>${t}</span></label></li>`).join("")}</ul><div class="actions"><button class="secondary" id="complete-check">Marcar todo</button><button class="primary" id="reset-day">Reiniciar hoy</button></div></div><div class="card"><h3>📈 Histórico de 14 días</h3><div class="history big">${(this.stats.history||[]).map(x=>`<div><span>${escapeHtml(x.date)}</span><div class="bar"><i style="width:${x.score*12.5}%"></i></div><b>${x.score}/8</b></div>`).join("")}</div></div></section>`;}
+
+  planPage(){let last="";let html=`<section><h2>🧭 Plan de los 7 días</h2><p class="muted">Construye tu propio sistema. Lo que escribas queda guardado.</p>`;PLAN.forEach(([day,title,id,label,ph,multi])=>{if(title!==last){if(last)html+="</div>";html+=`<div class="card"><div class="section-kicker">${day}</div><h3>${title}</h3>`;last=title;}html+=`<label>${label}${multi?`<textarea data-plan="${id}" placeholder="${escapeHtml(ph)}">${escapeHtml(this.state.plan[id])}</textarea>`:`<input data-plan="${id}" value="${escapeHtml(this.state.plan[id])}" placeholder="${escapeHtml(ph)}">`}</label>`});return html+`</div><div class="card callout"><h3>🚨 Tus comidas de emergencia</h3>${this.emergencyList(3)}</div></section>`;}
+
+  bind(){
+    this.shadowRoot.querySelectorAll("[data-tab]").forEach(el=>el.onclick=()=>this.setTab(el.dataset.tab));
+    const retry=this.shadowRoot.querySelector("#retry");if(retry)retry.onclick=()=>{this.error="";this.busy=true;this.render();this.load();};
+    const theme=this.shadowRoot.querySelector("#theme");if(theme)theme.onclick=()=>{this.state.settings.theme=this.state.settings.theme==='dark'?'light':'dark';this.scheduleDataSave();this.render();};
+    const date=this.shadowRoot.querySelector("#date");if(date)date.onchange=()=>this.setDay(date.value);
+    this.shadowRoot.querySelectorAll("[data-day-field]").forEach(el=>el.oninput=()=>this.setDayField(el.dataset.dayField,el.value));
+    this.shadowRoot.querySelectorAll("[data-plan]").forEach(el=>el.oninput=()=>this.setPlan(el.dataset.plan,el.value));
+    this.shadowRoot.querySelectorAll("[data-menu]").forEach(el=>el.oninput=()=>{const [d,m,p]=el.dataset.menu.split("|");this.setMenu(d,m,p,el.value);});
+    this.shadowRoot.querySelectorAll("[data-shop]").forEach(el=>el.onchange=()=>{const [c,id]=el.dataset.shop.split("|");this.toggleShop(c,id,el.checked);});
+    this.shadowRoot.querySelectorAll("[data-check]").forEach(el=>el.onchange=()=>this.toggleCheck(el.dataset.check,el.checked));
+    this.shadowRoot.querySelectorAll("[data-remove]").forEach(el=>el.onclick=()=>{const [c,id]=el.dataset.remove.split("|");this.removeProduct(c,id);});
+    const add=this.shadowRoot.querySelector("#add-product");if(add)add.onclick=()=>this.addProduct();
+    this.shadowRoot.querySelectorAll("#gen-shop").forEach(el=>el.onclick=()=>this.generateShopping());
+    this.shadowRoot.querySelectorAll("#copy-week").forEach(el=>el.onclick=()=>this.copyWeek());
+    this.shadowRoot.querySelectorAll("#complete-check").forEach(el=>el.onclick=()=>this.completeChecklist());
+    this.shadowRoot.querySelectorAll("#reset-day").forEach(el=>el.onclick=()=>this.resetToday());
+    const notify=this.shadowRoot.querySelector("#notify");if(notify)notify.onclick=()=>this.notifyToday();
+    this.shadowRoot.querySelectorAll("[data-emergency]").forEach(el=>el.onclick=()=>this.useEmergency(el.getAttribute("data-emergency")));
   }
 
-  content() {
-    switch(this.tab) {
-      case "inicio": return this.home();
-      case "plan": return this.planPage();
-      case "menu": return this.menuPage();
-      case "compra": return this.shoppingPage();
-      case "checklist": return this.checklistPage();
-      default: return this.todayPage();
-    }
-  }
-
-  todayPage() {
-    const d = this.dayData();
-    return `<section><h2>¿Qué comemos hoy?</h2><div class="card featured">
-      <div class="date-row"><label>Fecha</label><input id="date" type="date" value="${this.day}"></div>
-      ${this.area("Desayuno","desayuno",d.desayuno,"Ej: Café, huevos y tostadas")}
-      ${this.area("Almuerzo","almuerzo",d.almuerzo,"Ej: Pollo asado y ensalada")}
-      ${this.area("Cena","cena",d.cena,"Ej: Sopa de verduras y pan")}
-      ${this.area("Notas","notas",d.notas,"Opcional")}
-      <div class="actions"><button class="primary" id="reset">Reiniciar este día</button></div>
-    </div></section>`;
-  }
-
-  area(label, field, value, placeholder) { return `<label>${label}<textarea data-day-field="${field}" placeholder="${placeholder}">${this.escape(value)}</textarea></label>`; }
-  escape(v="") { return String(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"); }
-
-  home() { return `<section><h2>El Método de la Base Única</h2>
-    <div class="card featured"><p>Cocinar dos comidas distintas cada día es la forma más rápida de agotarte. <b>Cocinas una sola vez</b>, ahorras tiempo y dinero, y tus hijas ven a papá comer verduras.</p><p><b>Pros:</b> Ahorro de tiempo, mejor ejemplo y menos estrés.<br><b>Contras:</b> Hay que controlar las porciones y adaptar especias o salsas.</p></div>
-    <div class="callout"><b>¿Cómo controlar tus porciones?</b><br><b>Papá:</b> mitad verduras, cuarto proteína y cuarto carbohidratos.<br><b>Niñas:</b> mitad carbohidratos, cuarto proteína y cuarto verduras.</div>
-    <div class="card"><h3>Las 3 Reglas de Oro</h3><ol><li><b>Separa antes de sazonar:</b> saca la porción de las niñas antes de añadir chile, curry o mucha sal.</li><li><b>“No, pero sí”:</b> no prepares otra comida; pueden comer las partes aceptadas y la verdura permanece en el plato.</li><li><b>“Bocado de adulto”:</b> probar un bocado antes de decidir que no gusta.</li></ol></div>
-  </section>`; }
-
-  planPage() { let last=""; let html=`<section><h2>Plan de los 7 Días</h2><p class="muted">Responde poco a poco. Los cambios se guardan automáticamente.</p>`;
-    PLAN.forEach(([title,id,label,ph,multi])=>{ if(title!==last){ if(last) html+="</div>"; html+=`<div class="card"><h3>${title}</h3>`; last=title;} html+=`<label>${label}${multi?`<textarea data-plan="${id}" placeholder="${ph}">${this.escape(this.state.plan[id])}</textarea>`:`<input data-plan="${id}" value="${this.escape(this.state.plan[id])}" placeholder="${ph}">`}</label>`; });
-    return html+"</div></section>";
-  }
-
-  menuPage() { let html=`<section><h2>🍽️ Planificación Semanal</h2><p class="muted">Edita cualquier campo. Papá y Niñas comparten la base, con porciones/adaptaciones diferentes.</p><div class="table-wrap"><table><thead><tr><th>Día</th>${MEALS.map(m=>`<th>${m[1]}</th>`).join("")}</tr></thead><tbody>`;
-    DAYS.forEach(([day,label])=>{ html+=`<tr><th>${label}</th>`; MEALS.forEach(([meal])=>{ const v=this.state.menu[day][meal]; html+=`<td><div class="person papa">PAPÁ</div><textarea data-menu="${day}|${meal}|papa">${this.escape(v.papa)}</textarea><div class="person ninas">NIÑAS</div><textarea data-menu="${day}|${meal}|ninas">${this.escape(v.ninas)}</textarea></td>`; }); html+="</tr>"; });
-    return html+`</tbody></table></div></section>`;
-  }
-
-  shoppingPage() { let html=`<section><div class="head-row"><div><h2>🛒 Lista de la Compra</h2><p class="muted">Marca lo que ya tienes o compras. También puedes añadir productos.</p></div><button class="secondary" id="gen-shop">Generar desde menú</button></div>`;
-    SHOPPING.forEach(([cat,label])=>{ html+=`<div class="card"><h3>${label}</h3><ul class="checklist">${(this.state.shopping[cat]||[]).map(item=>`<li><label><input type="checkbox" data-shop="${cat}|${item.id}" ${item.checked?"checked":""}>${this.escape(item.name)}</label></li>`).join("")}</ul></div>`; });
-    return html+`<div class="card"><h3>Añadir producto</h3><div class="add-row"><input id="new-product" placeholder="Ej: Leche entera"><button class="primary" id="add-product">Añadir</button></div></div></section>`;
-  }
-
-  checklistPage() { const d=this.dayData(); return `<section><div class="head-row"><div><h2>📋 Checklist Diario</h2><p class="muted">El objetivo es que cada día haya más casillas marcadas que el anterior.</p></div><div class="big-score">${this.score()}<span>/8</span></div></div><div class="card featured"><ul class="checklist large">${CHECKLIST.map(([k,t])=>`<li><label><input type="checkbox" data-check="${k}" ${d.checklist[k]?"checked":""}><span>${t}</span></label></li>`).join("")}</ul><div class="actions"><button class="primary" id="reset">Desmarcar y reiniciar hoy</button></div></div></section>`; }
-
-  bind() {
-    this.shadowRoot.querySelectorAll("[data-tab]").forEach(el=>el.onclick=()=>{this.tab=el.dataset.tab; this.state.settings.active_tab=this.tab; this.render(); this.save();});
-    const date=this.shadowRoot.querySelector("#date"); if(date) date.onchange=()=>{this.day=date.value; this.render();};
-    this.shadowRoot.querySelectorAll("[data-day-field]").forEach(el=>el.oninput=()=>{ this.dayData()[el.dataset.dayField]=el.value; this.scheduleSaveDay(); });
-    this.shadowRoot.querySelectorAll("[data-plan]").forEach(el=>el.oninput=()=>{this.state.plan[el.dataset.plan]=el.value; clearTimeout(this._saveTimer); this._saveTimer=setTimeout(()=>this.save(),500);});
-    this.shadowRoot.querySelectorAll("[data-menu]").forEach(el=>el.oninput=()=>{const [d,m,p]=el.dataset.menu.split("|");this.state.menu[d][m][p]=el.value; clearTimeout(this._saveTimer); this._saveTimer=setTimeout(()=>this.save(),500);});
-    this.shadowRoot.querySelectorAll("[data-shop]").forEach(el=>el.onchange=()=>{const [cat,id]=el.dataset.shop.split("|");this.toggleShop(cat,id);});
-    this.shadowRoot.querySelectorAll("[data-check]").forEach(el=>el.onchange=()=>this.toggleCheck(el.dataset.check));
-    const add=this.shadowRoot.querySelector("#add-product"); if(add) add.onclick=()=>this.addProduct();
-    const gen=this.shadowRoot.querySelector("#gen-shop"); if(gen) gen.onclick=()=>this.generateShopping();
-    const reset=this.shadowRoot.querySelector("#reset"); if(reset) reset.onclick=()=>this.resetToday();
-  }
+  showToast(message,error=false){const t=this.shadowRoot?.querySelector("#toast");if(!t)return;t.textContent=message;t.className=`toast show ${error?"danger":""}`;clearTimeout(this._toastTimer);this._toastTimer=setTimeout(()=>t.className="toast",3000);}
 
   css(){return `
-    :host{display:block;min-height:100vh;background:var(--primary-background-color,#f4f4f4);color:var(--primary-text-color,#333);font-family:var(--paper-font-body1_-_font-family,system-ui,sans-serif)}
-    *{box-sizing:border-box} .app{max-width:1200px;margin:0 auto;padding:20px} header{background:var(--card-background-color,#fff);border-radius:20px;padding:28px 30px;display:flex;justify-content:space-between;gap:20px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.08)} h1{font-size:clamp(28px,4vw,44px);margin:4px 0}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;color:#e67e22}.score{padding:14px 18px;border:1px solid var(--divider-color,#ddd);border-radius:16px;text-align:center}.score b{display:block;font-size:26px;margin-top:3px} nav{display:flex;flex-wrap:wrap;gap:6px;background:var(--card-background-color,#fff);padding:8px;border-radius:16px;margin:14px 0;box-shadow:0 4px 16px rgba(0,0,0,.06)}.tab{flex:1;min-width:130px;border:0;background:transparent;border-radius:12px;padding:12px;cursor:pointer;color:var(--secondary-text-color,#666);font-weight:700}.tab:hover{background:rgba(230,126,34,.08)}.tab.active{background:#e67e22;color:#fff}main{padding-bottom:20px}h2{color:#e67e22;font-size:28px;margin:12px 0;border-bottom:3px solid #e67e22;padding-bottom:7px}h3{margin-top:0} .card,.callout{background:var(--card-background-color,#fff);border:1px solid var(--divider-color,#ddd);border-radius:16px;padding:18px;margin:14px 0}.featured{border:2px solid #3498db}.callout{border-left:6px solid #f1c40f;background:color-mix(in srgb,#f1c40f 8%,var(--card-background-color,#fff))}.muted{color:var(--secondary-text-color,#666)}label{display:block;font-weight:700;margin:12px 0}input,textarea{width:100%;margin-top:6px;padding:11px 12px;border:1px solid var(--divider-color,#ccc);border-radius:10px;background:var(--input-fill-color,#fff);color:inherit;font:inherit}textarea{min-height:70px;resize:vertical}input[type=checkbox]{width:auto;transform:scale(1.2);margin:0 10px 0 0}.date-row{display:flex;align-items:center;gap:12px}.date-row input{max-width:220px}.actions{display:flex;justify-content:flex-end;margin-top:14px}.primary,.secondary{border:0;border-radius:10px;padding:10px 16px;font-weight:800;cursor:pointer}.primary{background:#e67e22;color:#fff}.secondary{background:var(--secondary-background-color,#eee);color:inherit}.table-wrap{overflow:auto;border:1px solid var(--divider-color,#ddd);border-radius:14px}table{width:100%;min-width:900px;border-collapse:collapse}th,td{border:1px solid var(--divider-color,#ddd);padding:10px;vertical-align:top}thead th{background:#1e2a38;color:#fff}.person{font-size:12px;font-weight:900;margin:2px 0}.papa{color:#2980b9}.ninas{color:#f39c12}.checklist{list-style:none;padding:0;margin:0}.checklist li{border-bottom:1px solid var(--divider-color,#ddd);padding:11px 0}.checklist label{margin:0;display:flex;align-items:flex-start;font-weight:600}.large li{font-size:16px}.add-row{display:flex;gap:10px}.add-row input{margin:0}.head-row{display:flex;justify-content:space-between;gap:20px;align-items:center}.big-score{font-size:42px;font-weight:900}.big-score span{font-size:20px}.loading,.error{text-align:center;padding:60px}.error{color:#c0392b}footer{text-align:center;padding:24px;color:var(--secondary-text-color,#666);font-style:italic}
-    @media(max-width:700px){.app{padding:10px}header{padding:20px;align-items:flex-start}.score{min-width:90px}.tab{min-width:110px}.date-row,.add-row,.head-row{flex-direction:column;align-items:stretch}.date-row input{max-width:none}.big-score{align-self:flex-end} }
-  `}
+  :host{display:block;min-height:100vh;background:var(--primary-background-color,#f4f4f4);color:var(--primary-text-color,#222);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app{max-width:1240px;margin:auto;padding:18px} .app.dark{background:#151515;color:#eee;min-height:100vh;border-radius:22px}.app.dark .card,.app.dark header,.app.dark nav,.app.dark .metric,.app.dark .hero-score{background:#222;border-color:#444}.app.dark input,.app.dark textarea,.app.dark select{background:#2d2d2d;color:#eee;border-color:#555}.app.dark .bar{background:#444}.app.dark .secondary{background:#333;color:#eee}*{box-sizing:border-box}header{display:flex;justify-content:space-between;align-items:center;gap:20px;background:var(--card-background-color,#fff);padding:24px 28px;border-radius:22px;box-shadow:0 6px 24px rgba(0,0,0,.07)}.eyebrow,.section-kicker{font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#e67e22}h1{font-size:clamp(28px,4vw,44px);margin:4px 0}header p{margin:0;color:var(--secondary-text-color,#666)}.header-actions{display:flex;align-items:center;gap:10px}.score{border:1px solid var(--divider-color,#ddd);padding:10px 16px;border-radius:14px;text-align:center}.score b{display:block;font-size:24px}.icon-btn{border:1px solid var(--divider-color,#ddd);background:var(--card-background-color,#fff);border-radius:50%;width:42px;height:42px;cursor:pointer;font-size:18px}nav{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0;background:var(--card-background-color,#fff);padding:8px;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.05)}.tab{flex:1;min-width:120px;padding:12px;border:0;border-radius:11px;background:transparent;font-weight:800;color:var(--secondary-text-color,#666);cursor:pointer}.tab.active{background:#e67e22;color:#fff}.tab:hover{background:rgba(230,126,34,.1)}main{padding-bottom:20px}h2{color:#e67e22;font-size:30px;margin:10px 0;border-bottom:3px solid #e67e22;padding-bottom:6px}h3{margin:0 0 8px}.muted{color:var(--secondary-text-color,#666)}.small{font-size:12px}.hero{display:flex;justify-content:space-between;gap:20px;align-items:center;background:linear-gradient(135deg,var(--card-background-color,#fff),rgba(230,126,34,.08));padding:24px;border-radius:20px;border:1px solid var(--divider-color,#ddd)}.pill,.badge{display:inline-block;border-radius:999px;padding:5px 9px;background:rgba(230,126,34,.12);color:#b85d0d;font-size:12px;font-weight:800}.hero-score{border-radius:18px;padding:16px 20px;background:var(--card-background-color,#fff);text-align:center;border:1px solid var(--divider-color,#ddd)}.hero-score span{display:block;font-size:38px;font-weight:900}.hero-score small{color:var(--secondary-text-color,#666)}.grid{display:grid;gap:14px;margin:14px 0}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}.metric{border:1px solid var(--divider-color,#ddd);background:var(--card-background-color,#fff);border-radius:16px;padding:15px;text-align:left;cursor:pointer}.metric span{font-size:24px}.metric strong{display:block;font-size:27px;margin:3px 0}.metric small{color:var(--secondary-text-color,#666)}.metric:hover{transform:translateY(-1px)}.card{background:var(--card-background-color,#fff);border:1px solid var(--divider-color,#ddd);border-radius:18px;padding:18px}.featured{border:2px solid #3498db}.callout{border-left:6px solid #f1c40f}.card-title,.head-row{display:flex;justify-content:space-between;gap:14px;align-items:center}.link-btn{border:0;background:none;color:#c45f0f;font-weight:800;cursor:pointer}.meal-row,.planned{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--divider-color,#ddd)}.meal-row:last-child,.planned:last-child{border-bottom:0}.meal-icon{font-size:24px}.meal-text{font-weight:700;margin-top:3px}.meal-row small,.planned small{color:var(--secondary-text-color,#666)}.history>div{display:grid;grid-template-columns:55px 1fr 40px;gap:8px;align-items:center;margin:9px 0}.bar{height:9px;background:var(--secondary-background-color,#eee);border-radius:999px;overflow:hidden}.bar i{display:block;height:100%;background:#e67e22;border-radius:999px}.emergency{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--divider-color,#ddd)}.emergency:last-child{border-bottom:0}.emergency span{color:var(--secondary-text-color,#666)}.action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.primary,.secondary{border:0;padding:10px 15px;border-radius:11px;font-weight:800;cursor:pointer}.primary{background:#e67e22;color:#fff}.secondary{background:var(--secondary-background-color,#eee);color:inherit}.action-row{display:flex;gap:8px;flex-wrap:wrap}.date-row{display:flex;gap:8px;align-items:center}.date-row input{width:auto}.card label{display:block;font-weight:800;margin:11px 0}.card input[type=text],.card input[type=date],.card textarea,.card select{width:100%;padding:10px 12px;border:1px solid var(--divider-color,#ccc);background:var(--input-fill-color,#fff);color:inherit;border-radius:10px;font:inherit;margin-top:5px}.card textarea{min-height:72px;resize:vertical}.table-wrap{overflow:auto;border:1px solid var(--divider-color,#ddd);border-radius:14px}table{width:100%;min-width:960px;border-collapse:collapse}th,td{border:1px solid var(--divider-color,#ddd);padding:9px;vertical-align:top}thead th{background:#1e2a38;color:#fff}.person{font-size:11px;font-weight:900;margin:4px 0}.papa{color:#2980b9}.ninas{color:#f39c12}.tip{padding:12px;color:var(--secondary-text-color,#666);font-size:12px}.shopping-list,.checklist{list-style:none;padding:0;margin:0}.shopping-list li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--divider-color,#ddd)}.shopping-list label,.checklist label{display:flex;align-items:flex-start;gap:8px;margin:0;font-weight:600}.shopping-list input,.checklist input{width:auto;margin-top:2px}.done{text-decoration:line-through;opacity:.55}.delete{border:0;background:none;color:#c0392b;cursor:pointer}.checklist.large li{padding:13px 0;border-bottom:1px solid var(--divider-color,#ddd)}.add-row{display:grid;grid-template-columns:1fr 180px auto;gap:10px}.add-row input,.add-row select{margin-top:0}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.empty{padding:16px;border:1px dashed var(--divider-color,#ccc);border-radius:12px;color:var(--secondary-text-color,#666)}.loading,.error{text-align:center;padding:70px 20px}.error{color:#c0392b}.toast{position:fixed;right:24px;bottom:24px;opacity:0;pointer-events:none;background:#333;color:#fff;padding:12px 16px;border-radius:10px;transform:translateY(10px);transition:.2s}.toast.show{opacity:1;transform:none}.toast.danger{background:#c0392b}footer{text-align:center;padding:22px;color:var(--secondary-text-color,#666);font-style:italic}.emergency-grid{display:grid;gap:8px}@media(max-width:900px){.grid.two,.grid.three,.grid.four{grid-template-columns:1fr 1fr}.hero{align-items:flex-start}.add-row{grid-template-columns:1fr}.date-row{align-items:stretch}.date-row input{width:100%}}@media(max-width:650px){.app{padding:10px}header{align-items:flex-start;padding:20px}.score{display:none}.grid.two,.grid.three,.grid.four{grid-template-columns:1fr}.hero{flex-direction:column}.tab{min-width:100px}.action-grid{grid-template-columns:1fr}.emergency{grid-template-columns:1fr}.head-row{align-items:stretch;flex-direction:column}.date-row{flex-direction:column;align-items:stretch}.history>div{grid-template-columns:48px 1fr 34px}}
+  `;}
 }
 
 customElements.define("app-papas-panel", AppPapasPanel);

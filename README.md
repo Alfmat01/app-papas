@@ -1,98 +1,56 @@
-# 🍽️ Alimentación para Papás
+# Alimentación para Papás
 
-Aplicación familiar para Home Assistant, distribuida como integración personalizada compatible con HACS.
+Integración HACS para Home Assistant basada en la aplicación original de alimentación para papás ocupados.
 
-Nace del HTML **APP DE ALIMENTACIÓN PARA PAPÁS OCUPADOS** y conserva sus seis áreas principales: Hoy, Inicio, Plan 7 Días, Menú Semanal, Lista de Compra y Checklist Diario.
+## Incluye
 
-## Características
+- Panel lateral completo para Home Assistant.
+- Inicio con resumen del día, menú, progreso, racha y compra pendiente.
+- Registro real de desayuno, almuerzo, cena y notas por fecha.
+- Menú semanal editable para adulto y niños.
+- Lista de compra por categorías con productos manuales y generación desde el menú.
+- Checklist de 8 objetivos diarios con histórico de 14 días, media semanal y racha.
+- Plan guiado de 7 días y tres comidas de emergencia reutilizables.
+- Configuración del nombre del adulto, niños y notificaciones.
+- Servicios de Home Assistant para reiniciar día, generar compra, copiar semana, añadir productos, completar checklist y enviar resumen.
+- Sensores de Home Assistant para puntuación, compra pendiente, racha y próxima comida.
+- Custom card opcional para Lovelace.
+- Almacenamiento persistente de Home Assistant; no utiliza localStorage ni tokens en el frontend.
 
-- Panel completo en la barra lateral de Home Assistant.
-- Registro diario por fecha de desayuno, almuerzo, cena y notas.
-- Menú semanal editable para Papá y Niñas.
-- Plan guiado de 7 días.
-- Lista de la compra con categorías y productos personalizados.
-- Checklist diario con histórico por fecha.
-- Puntuación diaria y promedio de los últimos 7 días.
-- Persistencia centralizada mediante el almacenamiento de Home Assistant.
-- Sin tokens ni URL de HA dentro del frontend.
-- Responsive para móvil y escritorio.
-- Modo claro, oscuro o automático.
+## Instalación
 
-## Instalación con HACS
+1. HACS → Integraciones → Repositorios personalizados.
+2. Añade `https://github.com/Alfmat01/app-papas` como `Integration`.
+3. Instala la integración y reinicia Home Assistant.
+4. Configuración → Dispositivos y servicios → Añadir integración → **Alimentación para Papás**.
 
-1. En HACS, abre **Integraciones → ⋮ → Repositorios personalizados**.
-2. Añade este repositorio como **Integration**.
-3. Descarga **Alimentación para Papás**.
-4. Reinicia Home Assistant.
-5. Ve a **Ajustes → Dispositivos y servicios → Añadir integración**.
-6. Busca **Alimentación para Papás** y finaliza la configuración.
+## Configuración
 
-HACS instala las integraciones en `custom_components/`, y este repositorio sigue la estructura de integración requerida por HACS.
+Puedes definir el nombre del adulto, nombres de niños y, opcionalmente, un servicio `notify.*` para la acción de resumen.
 
-## Instalación manual
+## Tarjeta Lovelace
 
-Copia `custom_components/app_papas` dentro de tu directorio de configuración:
+El archivo está disponible en:
 
-```text
-/config/custom_components/app_papas/
+`/api/app_papas/static/app-papas-card.js`
+
+Añádelo como recurso JavaScript de tipo `module` y usa:
+
+```yaml
+type: custom:app-papas-card
 ```
 
-Reinicia Home Assistant y añade la integración desde la interfaz.
-
-## Uso
-
-Tras configurar la integración aparecerá **Alimentación para Papás** en la barra lateral.
-
-### Menú semanal
-
-La aplicación parte del menú incluido en el HTML original. Puedes modificar cualquier comida y guardar automáticamente.
-
-### Lista de compra
-
-Los productos originales se incluyen como valores iniciales. Los productos que añadas quedan almacenados junto al resto de la aplicación.
-
-### Datos diarios
-
-Cada fecha tiene su propio registro. El checklist también es diario, por lo que ya no hace falta borrar manualmente las casillas para comenzar un nuevo día.
+La documentación de Home Assistant mantiene el patrón de recursos para custom cards y de paneles personalizados para extensiones frontend. (https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)
 
 ## Servicios
 
-La integración incluye servicios pensados para automatizaciones futuras:
-
 - `app_papas.reset_today`
 - `app_papas.generate_shopping`
+- `app_papas.copy_week`
+- `app_papas.add_shopping_item`
+- `app_papas.complete_checklist`
+- `app_papas.notify_today`
 
-## Desarrollo
+## Autor
 
-Estructura:
-
-```text
-custom_components/app_papas/
-├── __init__.py
-├── api.py
-├── config_flow.py
-├── const.py
-├── defaults.py
-├── frontend.py
-├── manifest.json
-├── services.yaml
-├── storage.py
-├── translations/
-│   ├── en.json
-│   └── es.json
-└── frontend/
-    └── app-papas.js
-```
-
-## Licencia
-
-MIT. Ver `LICENSE`.
-
-## Créditos
-
-El contenido funcional y la organización inicial de la aplicación proceden del HTML suministrado para este proyecto.
-
-
-## Antes de publicar
-
-Sustituye `YOUR_GITHUB_USERNAME` en `custom_components/app_papas/manifest.json` por tu usuario de GitHub y crea el repositorio `app-papas` (o cambia las URLs por el nombre que elijas).
+[@Alfmat01](https://github.com/Alfmat01)

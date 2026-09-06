@@ -2,11 +2,34 @@
   "config": {
     "step": {
       "user": {
-        "title": "Food for busy dads",
-        "description": "Create the family food planner.",
-        "data": {"title": "App title"}
+        "title": "Alimentación para Papás",
+        "description": "Configura el planificador de alimentación familiar.",
+        "data": {
+          "title": "Título de la aplicación",
+          "adult_name": "Nombre del adulto",
+          "children": "Nombres de niños, separados por comas",
+          "notifications_enabled": "Activar notificaciones",
+          "notify_service": "Servicio de notificación (por ejemplo notify.mobile_app_telefono)"
+        }
       }
     },
-    "abort": {"single_instance_allowed": "Only one instance is supported."}
+    "abort": {
+      "single_instance_allowed": "Solo se admite una instancia."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de Alimentación para Papás",
+        "description": "Personaliza nombres y el servicio de notificaciones.",
+        "data": {
+          "title": "Título de la aplicación",
+          "adult_name": "Nombre del adulto",
+          "children": "Nombres de niños, separados por comas",
+          "notifications_enabled": "Activar notificaciones",
+          "notify_service": "Servicio de notificación"
+        }
+      }
+    }
   }
 }

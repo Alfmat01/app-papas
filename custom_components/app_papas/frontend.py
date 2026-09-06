@@ -20,7 +20,7 @@ async def async_setup_frontend(hass: HomeAssistant) -> None:
         [StaticPathConfig(STATIC_URL, str(FRONTEND_DIR), False)]
     )
 
-    if PANEL_PATH not in hass.data.get("frontend_panels", {}):
+    if not hass.data.get(f"{DOMAIN}_panel_registered"):
         async_register_built_in_panel(
             hass,
             component_name="custom",
@@ -39,3 +39,4 @@ async def async_setup_frontend(hass: HomeAssistant) -> None:
         )
 
     hass.data[f"{DOMAIN}_frontend_registered"] = True
+    hass.data[f"{DOMAIN}_panel_registered"] = True

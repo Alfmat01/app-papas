@@ -1,4 +1,8 @@
 {
   "name": "Alimentación para Papás",
-  "homeassistant": "2026.1.0"
+  "content_in_root": false,
+  "filename": "app_papas",
+  "render_readme": true,
+  "domains": ["app_papas"],
+  "homeassistant": "2026.4.0"
 }
