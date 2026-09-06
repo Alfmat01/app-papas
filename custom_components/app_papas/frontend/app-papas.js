@@ -48,7 +48,7 @@ class AppPapasPanel extends HTMLElement {
 
   connectedCallback() {
     this.attachShadow({mode: "open"});
-    this.state = null;
+    this.state = this.initialState();
     this.day = localDate();
     this.tab = "hoy";
     this.busy = true;
@@ -56,10 +56,20 @@ class AppPapasPanel extends HTMLElement {
     this.load();
   }
 
+  initialState() {
+    return {
+      settings: {active_tab: "hoy"},
+      days: {},
+      plan: Object.fromEntries(PLAN.map(([, id]) => [id, ""])),
+      menu: Object.fromEntries(DAYS.map(([d]) => [d, Object.fromEntries(MEALS.map(([m]) => [m, {papa: "", ninas: ""}]))])),
+      shopping: Object.fromEntries(SHOPPING.map(([cat]) => [cat, []]))
+    };
+  }
+
   async load() {
     try {
       const res = await fetch(`${API}/data`, {credentials: "same-origin"});
-      this.state = await res.json();
+      this.state = this.mergeState(this.initialState(), await res.json());
       this.tab = this.state.settings?.active_tab || "hoy";
       this.busy = false;
       this.render();
@@ -68,6 +78,26 @@ class AppPapasPanel extends HTMLElement {
       this.error = err.message;
       this.render();
     }
+  }
+
+  mergeState(base, incoming) {
+    const src = incoming || {};
+    const result = {...base, ...src};
+    result.settings = {...base.settings, ...(src.settings || {})};
+    result.days = {...base.days, ...(src.days || {})};
+    result.plan = {...base.plan, ...(src.plan || {})};
+    result.menu = {...base.menu};
+    for (const [day, meals] of Object.entries(src.menu || {})) {
+      result.menu[day] = {...(base.menu[day] || {}), ...(meals || {})};
+      for (const [meal, value] of Object.entries(meals || {})) {
+        result.menu[day][meal] = {papa: "", ninas: "", ...(base.menu[day]?.[meal] || {}), ...(value || {})};
+      }
+    }
+    result.shopping = {...base.shopping, ...(src.shopping || {})};
+    for (const [cat] of Object.entries(base.shopping)) {
+      result.shopping[cat] = Array.isArray(src.shopping?.[cat]) ? src.shopping[cat] : [];
+    }
+    return result;
   }
 
   async save() {
@@ -79,12 +109,13 @@ class AppPapasPanel extends HTMLElement {
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(this.state),
     });
-    this.state = await res.json();
+    this.state = this.mergeState(this.initialState(), await res.json());
     this.busy = false;
     this.render();
   }
 
   async saveDay() {
+    this.state ||= this.initialState();
     this.state.days = this.state.days || {};
     this.busy = true;
     const res = await fetch(`${API}/day/${this.day}`, {
@@ -138,7 +169,7 @@ class AppPapasPanel extends HTMLElement {
     try { await this._hass.callService(DOMAIN, "generate_shopping"); await this.load(); } catch (_) {}
   }
 
-  score() { return CHECKLIST.reduce((n,[k]) => n + (this.dayData().checklist[k] ? 1 : 0), 0); }
+  score() { if (!this.state) return 0; return CHECKLIST.reduce((n,[k]) => n + (this.dayData().checklist[k] ? 1 : 0), 0); }
 
   render() {
     if (!this.shadowRoot) return;
