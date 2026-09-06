@@ -36,7 +36,7 @@ class AppPapasConfigFlow(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     def async_get_options_flow(config_entry):
-        return AppPapasOptionsFlow(config_entry)
+        return AppPapasOptionsFlow()
 
 
 class AppPapasOptionsFlow(OptionsFlow):
