@@ -11,6 +11,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import API_URL, DOMAIN
 from .storage import AppPapasStore
+from .shopping import sync_menu_shopping
 
 
 def _get_store(hass: HomeAssistant) -> AppPapasStore | None:
@@ -38,7 +39,10 @@ class AppPapasDataView(HomeAssistantView):
             return self.json_message("JSON inválido", HTTPStatus.BAD_REQUEST)
         if not isinstance(payload, dict):
             return self.json_message("El cuerpo debe ser un objeto", HTTPStatus.BAD_REQUEST)
+        old_menu = store.data.get("menu")
         store.data = store._merge(store.data, payload)
+        if "menu" in payload and payload.get("menu") != old_menu:
+            sync_menu_shopping(store)
         await store.async_save()
         return self.json(store.data)
 

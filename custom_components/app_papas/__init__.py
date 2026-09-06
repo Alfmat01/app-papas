@@ -20,6 +20,7 @@ from .const import (
 from .defaults import default_shopping
 from .frontend import async_setup_frontend
 from .storage import AppPapasStore
+from .shopping import sync_menu_shopping
 from . import sensor as _sensor  # noqa: F401
 
 
@@ -65,39 +66,7 @@ def _register_services(hass: HomeAssistant) -> None:
         store = _get_store(hass)
         if not store:
             return
-        base = default_shopping()
-        vocabulary = {
-            "proteina": ["huevo", "pollo", "atún", "atun", "carne", "yogur", "yogurt", "pavo", "jamón", "jamon", "salchicha", "proteína", "proteina", "bacon"],
-            "carbohidratos": ["arroz", "avena", "pan", "pasta", "macarrón", "macarrones", "patata", "tostada", "pizza", "frijol", "frijoles"],
-            "verduras_frutas": ["brócoli", "brocoli", "ensalada", "verdura", "zanahoria", "aguacate", "fruta", "plátano", "platano", "espinaca", "coliflor", "tomate", "maíz", "maiz"],
-            "extras": ["queso", "aceite", "salsa", "leche", "nueces", "mantequilla"],
-        }
-        canonical = {
-            "huevo":"Huevos", "pollo":"Pollo", "atún":"Atún", "atun":"Atún", "carne":"Carne picada", "yogur":"Yogur griego", "yogurt":"Yogur griego", "pavo":"Pavo", "jamón":"Jamón", "jamon":"Jamón", "salchicha":"Salchichas", "bacon":"Bacon", "arroz":"Arroz", "avena":"Avena", "pan":"Pan", "pasta":"Pasta", "macarrón":"Macarrones", "macarrones":"Macarrones", "patata":"Patatas", "tostada":"Tostadas", "pizza":"Pizza", "frijol":"Frijoles", "frijoles":"Frijoles", "brócoli":"Brócoli", "brocoli":"Brócoli", "ensalada":"Ensalada", "verdura":"Verduras", "zanahoria":"Zanahorias", "aguacate":"Aguacate", "fruta":"Fruta", "plátano":"Plátanos", "platano":"Plátanos", "espinaca":"Espinacas", "coliflor":"Coliflor", "tomate":"Tomate", "maíz":"Maíz", "maiz":"Maíz", "queso":"Queso", "aceite":"Aceite de oliva", "salsa":"Salsa", "leche":"Leche", "nueces":"Nueces", "mantequilla":"Mantequilla", "proteína":"Proteína", "proteina":"Proteína",
-        }
-        detected = {k: set() for k in vocabulary}
-        for day in store.data.get("menu", {}).values():
-            for meal in day.values():
-                for text in (meal.get("papa", ""), meal.get("ninas", "")):
-                    low = str(text).lower()
-                    for category, words in vocabulary.items():
-                        for word in words:
-                            if word in low:
-                                detected[category].add(canonical.get(word, word.title()))
-        generated = {category: list(items) for category, items in base.items()}
-        idx = 2000
-        for category, names in detected.items():
-            existing = {item["name"].lower() for item in generated[category]}
-            for name in sorted(names):
-                if name.lower() in existing:
-                    continue
-                idx += 1
-                generated[category].append({"id": f"menu_{idx}", "name": name, "checked": False, "source": "menu"})
-        for category, items in store.data.get("shopping", {}).items():
-            for item in items:
-                if item.get("source") in ("custom", "manual"):
-                    generated.setdefault(category, []).append(item)
-        store.data["shopping"] = generated
+        sync_menu_shopping(store)
         await store.async_save()
 
     async def copy_week(call: ServiceCall) -> None:

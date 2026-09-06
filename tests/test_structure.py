@@ -9,7 +9,7 @@ def test_manifest_metadata():
     assert manifest["config_flow"] is True
     assert manifest["documentation"] == "https://github.com/Alfmat01/app-papas"
     assert manifest["issue_tracker"] == "https://github.com/Alfmat01/app-papas/issues"
-    assert manifest["version"] == "1.1.5"
+    assert manifest["version"] == "1.1.6"
 
 def test_frontend_exists():
     assert (ROOT / "custom_components/app_papas/frontend/app-papas.js").exists()
@@ -20,3 +20,14 @@ def test_frontend_registered_is_defined_before_use():
     js = (ROOT / "custom_components/app_papas/frontend/app-papas.js").read_text()
     assert "const registered=MEALS.filter" in js
     assert "<strong>${registered}</strong>" in js
+
+
+def test_shopping_contains_ternera_alias():
+    text = (ROOT / "custom_components/app_papas/shopping.py").read_text()
+    assert '"Ternera"' in text
+    assert '"ternera"' in text
+
+def test_dashboard_has_no_complete_checklist_quick_action():
+    text = (ROOT / "custom_components/app_papas/frontend/app-papas.js").read_text()
+    assert '<button class="secondary" id="complete-check">Completar checklist</button>' not in text
+    assert '<button class="secondary" id="complete-check">Marcar todo</button>' in text

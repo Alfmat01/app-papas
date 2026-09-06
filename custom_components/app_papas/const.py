@@ -2,7 +2,7 @@ from __future__ import annotations
 
 DOMAIN = "app_papas"
 NAME = "Alimentación para Papás"
-VERSION = "1.1.2"
+VERSION = "1.1.6"
 STORAGE_VERSION = 1
 DATA_SCHEMA_VERSION = 2
 STORAGE_KEY = DOMAIN

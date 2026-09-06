@@ -1,8 +1,10 @@
 from pathlib import Path
 
+ROOT = Path(__file__).parents[1]
+
 
 def test_storage_uses_stable_store_version_and_schema_migration():
-    source = Path("custom_components/app_papas/storage.py").read_text(encoding="utf-8")
+    source = (ROOT / "custom_components/app_papas/storage.py").read_text(encoding="utf-8")
     const = Path("custom_components/app_papas/const.py").read_text(encoding="utf-8")
     assert "class AppPapasStorage(Store[dict[str, Any]])" in source
     assert "def _migrate_schema" in source
