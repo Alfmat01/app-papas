@@ -1,0 +1,16 @@
+reset_today:
+  name: Reiniciar día
+  description: Borra las comidas, notas y checklist del día indicado.
+  fields:
+    date:
+      name: Fecha
+      description: Fecha en formato YYYY-MM-DD. Por defecto, hoy.
+      required: false
+      example: "2026-09-06"
+      selector:
+        date: {}
+
+generate_shopping:
+  name: Generar lista de compra
+  description: Sustituye la lista de compra actual por una lista basada en el menú semanal.
+  fields: {}

@@ -1,0 +1,12 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Food for busy dads",
+        "description": "Create the family food planner.",
+        "data": {"title": "App title"}
+      }
+    },
+    "abort": {"single_instance_allowed": "Only one instance is supported."}
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Alimentación para Papás",
+        "description": "Configura el planificador de alimentación familiar.",
+        "data": {"title": "Título de la aplicación"}
+      }
+    },
+    "abort": {"single_instance_allowed": "Solo se admite una instancia."}
+  }
+}
