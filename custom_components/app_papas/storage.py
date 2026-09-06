@@ -2,32 +2,60 @@ from __future__ import annotations
 
 from copy import deepcopy
 from datetime import date, timedelta
-from typing import Any, Callable, Awaitable
+from typing import Any, Callable
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
-from .const import STORAGE_KEY, STORAGE_VERSION, CHECKLIST_ITEMS
+from .const import STORAGE_KEY, STORAGE_VERSION, DATA_SCHEMA_VERSION, CHECKLIST_ITEMS
 from .defaults import default_data
+
+
+class AppPapasStorage(Store[dict[str, Any]]):
+    """Persistent storage for App Papás.
+
+    The Home Assistant Store version intentionally remains at 1. Schema
+    migrations are handled by AppPapasStore.async_load so upgrades cannot
+    fail because of a Store major-version migration.
+    """
 
 
 class AppPapasStore:
     def __init__(self, hass: HomeAssistant) -> None:
         self.hass = hass
-        self._store = Store[dict[str, Any]](hass, STORAGE_VERSION, f"{STORAGE_KEY}.json")
+        self._store = AppPapasStorage(hass, STORAGE_VERSION, f"{STORAGE_KEY}.json")
         self.data: dict[str, Any] = default_data()
         self._listeners: set[Callable[[], None]] = set()
+
+    @staticmethod
+    def _migrate_schema(data: dict[str, Any]) -> dict[str, Any]:
+        """Migrate the application data schema without changing Store version."""
+        data = deepcopy(data)
+        data.setdefault("plan", {})
+        data.setdefault("menu", {})
+        data.setdefault("days", {})
+        data.setdefault("shopping", {})
+        settings = data.setdefault("settings", {})
+        settings.setdefault("theme", "system")
+        settings.setdefault("active_tab", "hoy")
+        settings.setdefault("adult_name", "Papá")
+        settings.setdefault("children", ["Niñas"])
+        settings.setdefault("notifications_enabled", False)
+        settings.setdefault("notify_service", "")
+        data.setdefault("emergency_meals", [])
+        data["schema_version"] = DATA_SCHEMA_VERSION
+        return data
 
     async def async_load(self) -> None:
         saved = await self._store.async_load()
         if saved:
-            self.data = self._migrate(saved)
+            self.data = saved
         self.data = self._merge(default_data(), self.data)
-        self.data["schema_version"] = STORAGE_VERSION
+        self.data = self._migrate_schema(self.data)
         await self._store.async_save(self.data)
 
     async def async_save(self, notify: bool = True) -> None:
-        self.data["schema_version"] = STORAGE_VERSION
+        self.data["schema_version"] = DATA_SCHEMA_VERSION
         await self._store.async_save(self.data)
         if notify:
             for listener in tuple(self._listeners):
@@ -45,18 +73,6 @@ class AppPapasStore:
                 merged[key] = AppPapasStore._merge(merged[key], value) if key in merged else value
             return merged
         return saved
-
-    @classmethod
-    def _migrate(cls, saved: dict[str, Any]) -> dict[str, Any]:
-        data = deepcopy(saved)
-        version = int(data.get("schema_version", 1))
-        if version < 2:
-            data.setdefault("settings", {})
-            data["settings"].setdefault("adult_name", "Papá")
-            data["settings"].setdefault("children", ["Niñas"])
-            data.setdefault("emergency_meals", [])
-            data["schema_version"] = 2
-        return data
 
     @staticmethod
     def day_template() -> dict[str, Any]:
