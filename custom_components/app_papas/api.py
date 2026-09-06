@@ -42,7 +42,9 @@ class AppPapasDataView(HomeAssistantView):
         old_menu = store.data.get("menu")
         store.data = store._merge(store.data, payload)
         if "menu" in payload and payload.get("menu") != old_menu:
-            sync_menu_shopping(store)
+            changed, new_shopping = sync_menu_shopping(store)
+            if changed:
+                store.data["shopping"] = new_shopping
         await store.async_save()
         return self.json(store.data)
 

@@ -14,7 +14,7 @@ from .api import async_setup_api
 from .const import (
     DOMAIN, PLATFORMS, SERVICE_RESET_TODAY, SERVICE_GENERATE_SHOPPING,
     SERVICE_COPY_WEEK, SERVICE_ADD_SHOPPING_ITEM, SERVICE_COMPLETE_CHECKLIST,
-    SERVICE_NOTIFY_TODAY, CONF_ADULT_NAME, CONF_CHILDREN, CONF_NOTIFICATIONS,
+    SERVICE_NOTIFY_TODAY, SERVICE_SET_MENU_RECIPE, CONF_ADULT_NAME, CONF_CHILDREN, CONF_NOTIFICATIONS,
     CONF_NOTIFY_SERVICE, CHECKLIST_ITEMS,
 )
 from .defaults import default_shopping
@@ -32,6 +32,9 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     store = AppPapasStore(hass)
     await store.async_load()
+    changed, new_shopping = sync_menu_shopping(store)
+    if changed:
+        store.data["shopping"] = new_shopping
     settings = store.data.setdefault("settings", {})
     merged_config = {**entry.data, **entry.options}
     settings["adult_name"] = merged_config.get(CONF_ADULT_NAME, settings.get("adult_name", "Papá"))
@@ -66,7 +69,9 @@ def _register_services(hass: HomeAssistant) -> None:
         store = _get_store(hass)
         if not store:
             return
-        sync_menu_shopping(store)
+        changed, new_shopping = sync_menu_shopping(store)
+        if changed:
+            store.data["shopping"] = new_shopping
         await store.async_save()
 
     async def copy_week(call: ServiceCall) -> None:
@@ -107,6 +112,18 @@ def _register_services(hass: HomeAssistant) -> None:
         target["checklist"] = {k: True for k, _ in CHECKLIST_ITEMS}
         await store.async_save()
 
+    async def set_menu_recipe(call: ServiceCall) -> None:
+        store = _get_store(hass)
+        if not store:
+            return
+        day = str(call.data.get("day", "")).strip()
+        meal = str(call.data.get("meal", "")).strip()
+        recipe_id = str(call.data.get("recipe_id", "")).strip()
+        if day not in store.data.get("menu", {}) or meal not in store.data.get("menu", {}).get(day, {}):
+            return
+        store.data["menu"][day][meal]["recipe_id"] = recipe_id
+        await store.async_save()
+
     async def notify_today(call: ServiceCall) -> None:
         store = _get_store(hass)
         if not store:
@@ -140,6 +157,7 @@ def _register_services(hass: HomeAssistant) -> None:
         SERVICE_ADD_SHOPPING_ITEM: vol.Schema({vol.Required("name"): str, vol.Optional("category", default="extras"): str}),
         SERVICE_COMPLETE_CHECKLIST: vol.Schema({vol.Optional("date"): cv.date}),
         SERVICE_NOTIFY_TODAY: vol.Schema({vol.Optional("notify_service"): str, vol.Optional("message"): str}),
+        SERVICE_SET_MENU_RECIPE: vol.Schema({vol.Required("day"): str, vol.Required("meal"): str, vol.Required("recipe_id"): str}),
     }
     funcs = {
         SERVICE_RESET_TODAY: reset_today,
@@ -148,6 +166,7 @@ def _register_services(hass: HomeAssistant) -> None:
         SERVICE_ADD_SHOPPING_ITEM: add_shopping_item,
         SERVICE_COMPLETE_CHECKLIST: complete_checklist,
         SERVICE_NOTIFY_TODAY: notify_today,
+        SERVICE_SET_MENU_RECIPE: set_menu_recipe,
     }
     for name, fn in funcs.items():
         hass.services.async_register(DOMAIN, name, fn, schema=schemas[name])

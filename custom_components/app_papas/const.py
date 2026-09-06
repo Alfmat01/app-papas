@@ -2,7 +2,7 @@ from __future__ import annotations
 
 DOMAIN = "app_papas"
 NAME = "Alimentación para Papás"
-VERSION = "1.1.6"
+VERSION = "1.2.0"
 STORAGE_VERSION = 1
 DATA_SCHEMA_VERSION = 2
 STORAGE_KEY = DOMAIN
@@ -51,6 +51,7 @@ SERVICE_COPY_WEEK = "copy_week"
 SERVICE_ADD_SHOPPING_ITEM = "add_shopping_item"
 SERVICE_COMPLETE_CHECKLIST = "complete_checklist"
 SERVICE_NOTIFY_TODAY = "notify_today"
+SERVICE_SET_MENU_RECIPE = "set_menu_recipe"
 
 SENSOR_TYPES = {
     "checklist": "Checklist hoy",

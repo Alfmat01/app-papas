@@ -1,46 +1,69 @@
-# Alimentación para Papás
+# App Papás para Home Assistant
 
-Integración HACS para Home Assistant basada en la aplicación original de alimentación para papás ocupados.
+Integración personalizada para Home Assistant, preparada para HACS, inspirada en el HTML original de Alimentación para Papás.
 
-## Incluye
+## Qué incluye
 
-- Panel lateral completo para Home Assistant.
-- Inicio con resumen del día, menú, progreso, racha y compra pendiente.
-- Registro real de desayuno, almuerzo, cena y notas por fecha.
+- Panel completo `Alimentación` en Home Assistant.
+- Vista Inicio con resumen diario, racha, progreso y acciones rápidas.
+- Vista Hoy con plan vs. lo realmente comido.
 - Menú semanal editable para adulto y niños.
-- Lista de compra por categorías con productos manuales y generación desde el menú.
-- Checklist de 8 objetivos diarios con histórico de 14 días, media semanal y racha.
-- Plan guiado de 7 días y tres comidas de emergencia reutilizables.
-- Configuración del nombre del adulto, niños y notificaciones.
-- Servicios de Home Assistant para reiniciar día, generar compra, copiar semana, añadir productos, completar checklist y enviar resumen.
-- Sensores de Home Assistant para puntuación, compra pendiente, racha y próxima comida.
-- Custom card opcional para Lovelace.
-- Almacenamiento persistente de Home Assistant; no utiliza localStorage ni tokens en el frontend.
+- Biblioteca de recetas completas con ingredientes, cantidades, tiempos y pasos.
+- Asociación de recetas al menú para calcular automáticamente la compra.
+- Lista de compra agrupada por categorías.
+- Cantidades acumuladas para toda la familia (1 adulto + 1 ración por niño configurado).
+- Detección orientativa de ingredientes en texto libre cuando no hay receta asociada.
+- Checklist diario con histórico y racha.
+- Plan de 7 días y comidas de emergencia.
+- Sensores Home Assistant.
+- Servicios de Home Assistant para automatizaciones.
+- Tarjeta Lovelace `app-papas-card`.
+- Persistencia en `.storage` de Home Assistant.
 
-## Instalación
+## Cantidades automáticas
 
-1. HACS → Integraciones → Repositorios personalizados.
-2. Añade `https://github.com/Alfmat01/app-papas` como `Integration`.
-3. Instala la integración y reinicia Home Assistant.
-4. Configuración → Dispositivos y servicios → Añadir integración → **Alimentación para Papás**.
+Cuando una comida tiene una receta asociada, la aplicación toma los ingredientes de la receta y multiplica la cantidad por el número de raciones familiares configuradas.
 
-## Configuración
+Ejemplo: una receta indica 180 g de ternera por ración y hay 1 adulto + 1 niño:
 
-Puedes definir el nombre del adulto, nombres de niños y, opcionalmente, un servicio `notify.*` para la acción de resumen.
+`360 g · Ternera`
 
-## Tarjeta Lovelace
+Si la misma receta se utiliza dos veces en la semana, la lista acumula:
 
-El archivo está disponible en:
+`720 g · Ternera`
 
-`/api/app_papas/static/app-papas-card.js`
+Cuando el texto del menú no tiene receta asociada, la aplicación intenta detectar ingredientes conocidos y aplica cantidades orientativas. Si escribes una cantidad explícita (`500 g de ternera`), esa cantidad tiene prioridad.
 
-Añádelo como recurso JavaScript de tipo `module` y usa:
+## Recetas
 
-```yaml
-type: custom:app-papas-card
-```
+La pestaña `Recetas` contiene recetas base derivadas del menú original, con:
 
-La documentación de Home Assistant mantiene el patrón de recursos para custom cards y de paneles personalizados para extensiones frontend. (https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)
+- ingredientes y cantidades
+- categoría
+- tiempo de preparación y cocción
+- pasos de preparación
+- alias para reconocimiento del texto
+
+Desde cada receta se puede asignar directamente la receta a un día y comida del menú.
+
+## Instalación HACS
+
+Añade el repositorio como repositorio personalizado de tipo `Integration` en HACS y después instala `Alimentación para Papás`.
+
+Repositorio:
+
+`https://github.com/Alfmat01/app-papas`
+
+## Desarrollo
+
+La integración está en `custom_components/app_papas`.
+
+Validaciones locales incluidas:
+
+- compilación Python
+- sintaxis JavaScript
+- validación JSON
+- tests de estructura, migración y generación de compra
 
 ## Servicios
 
@@ -50,7 +73,16 @@ La documentación de Home Assistant mantiene el patrón de recursos para custom 
 - `app_papas.add_shopping_item`
 - `app_papas.complete_checklist`
 - `app_papas.notify_today`
+- `app_papas.set_menu_recipe`
 
-## Autor
+## Tarjeta Lovelace
 
-[@Alfmat01](https://github.com/Alfmat01)
+Después de instalar el recurso frontend, se puede añadir una tarjeta personalizada:
+
+```yaml
+type: custom:app-papas-card
+```
+
+## Nota
+
+Las recetas incluidas son una base práctica para la aplicación y no sustituyen recomendaciones médicas o nutricionales personalizadas.

@@ -74,3 +74,24 @@ notify_today:
       selector:
         text:
           multiline: true
+
+
+set_menu_recipe:
+  name: Asociar receta al menú
+  description: Asocia una receta completa a una comida del menú para calcular ingredientes y cantidades.
+  fields:
+    day:
+      name: Día
+      required: true
+      selector:
+        text: {}
+    meal:
+      name: Comida
+      required: true
+      selector:
+        text: {}
+    recipe_id:
+      name: Receta
+      required: true
+      selector:
+        text: {}
