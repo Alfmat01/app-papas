@@ -1,6 +1,13 @@
 const DOMAIN = "app_papas";
 const API = `/api/${DOMAIN}`;
 
+function haFetch(hass, path, init = {}) {
+  if (!hass || typeof hass.fetchWithAuth !== "function") {
+    throw new Error("La sesión de Home Assistant todavía no está disponible.");
+  }
+  return hass.fetchWithAuth(path, init);
+}
+
 const PLAN = [
   ["Día 1: Encuentra tu Punto Débil", "d1_problema", "Mi mayor problema es", "Ej: Me derrumbo por la noche..."],
   ["Día 1: Encuentra tu Punto Débil", "d1_cuando", "¿Cuándo suelo desmoronarme?", "Ej: 10:30 pm, en la oficina..."],
@@ -67,8 +74,14 @@ class AppPapasPanel extends HTMLElement {
   }
 
   async load() {
+    if (!this._hass || typeof this._hass.fetchWithAuth !== "function") {
+      this.busy = false;
+      this.error = "Esperando a que Home Assistant complete la sesión…";
+      this.render();
+      return;
+    }
     try {
-      const res = await fetch(`${API}/data`, {credentials: "same-origin"});
+      const res = await haFetch(this._hass, `${API}/data`);
       this.state = this.mergeState(this.initialState(), await res.json());
       this.tab = this.state.settings?.active_tab || "hoy";
       this.busy = false;
@@ -103,9 +116,8 @@ class AppPapasPanel extends HTMLElement {
   async save() {
     this.busy = true;
     this.render();
-    const res = await fetch(`${API}/data`, {
+    const res = await haFetch(this._hass, `${API}/data`, {
       method: "POST",
-      credentials: "same-origin",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(this.state),
     });
@@ -118,9 +130,8 @@ class AppPapasPanel extends HTMLElement {
     this.state ||= this.initialState();
     this.state.days = this.state.days || {};
     this.busy = true;
-    const res = await fetch(`${API}/day/${this.day}`, {
+    const res = await haFetch(this._hass, `${API}/day/${this.day}`, {
       method: "POST",
-      credentials: "same-origin",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(this.state.days[this.day] || {}),
     });
