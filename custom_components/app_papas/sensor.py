@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import date
 
+from homeassistant.util import dt as dt_util
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.components.sensor import SensorEntity
@@ -53,7 +55,7 @@ class AppPapasSensor(SensorEntity):
             self.async_write_ha_state()
 
     def _update(self) -> None:
-        today = self._store.hass.config.now().date().isoformat()
+        today = dt_util.now().date().isoformat()
         d = self._store.get_day(today)
         score = self._store.score(today)
         pending = self._store.shopping_pending()
@@ -69,7 +71,7 @@ class AppPapasSensor(SensorEntity):
             self._value = pending
             self._attrs = {"pending": pending}
         elif self._kind == "streak":
-            self._value = self._store.streak(self._store.hass.config.now().date())
+            self._value = self._store.streak(dt_util.now().date())
             self._attrs = {"days": self._value}
         else:
             if not d.get("desayuno"):

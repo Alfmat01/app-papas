@@ -7,6 +7,7 @@ from typing import Any
 from aiohttp import web
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
+from homeassistant.util import dt as dt_util
 
 from .const import API_URL, DOMAIN
 from .storage import AppPapasStore
@@ -87,7 +88,7 @@ class AppPapasStatsView(HomeAssistantView):
         store = _get_store(request.app["hass"])
         if store is None:
             return self.json_message("Integración no configurada", HTTPStatus.NOT_FOUND)
-        today = request.app["hass"].config.now().date()
+        today = dt_util.now().date()
         history = store.history(today, 14)
         return self.json({
             "today_score": store.score(today.isoformat()),

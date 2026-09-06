@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from homeassistant.util import dt as dt_util
 from datetime import date, timedelta
 from typing import Any
 from uuid import uuid4
@@ -56,7 +57,7 @@ def _register_services(hass: HomeAssistant) -> None:
         if not store:
             return
         day_value = call.data.get("date")
-        day = day_value.isoformat() if hasattr(day_value, "isoformat") else (day_value or hass.config.now().date().isoformat())
+        day = day_value.isoformat() if hasattr(day_value, "isoformat") else (day_value or dt_util.now().date().isoformat())
         store.data.setdefault("days", {})[day] = store.day_template()
         await store.async_save()
 
@@ -106,7 +107,7 @@ def _register_services(hass: HomeAssistant) -> None:
         source_offset = int(call.data.get("source_offset", 7))
         days = store.data.setdefault("days", {})
         copied: dict[str, Any] = {}
-        today = hass.config.now().date()
+        today = dt_util.now().date()
         for offset in range(7):
             src = today + timedelta(days=offset - source_offset)
             dst = today + timedelta(days=offset)
@@ -132,7 +133,7 @@ def _register_services(hass: HomeAssistant) -> None:
         if not store:
             return
         day_value = call.data.get("date")
-        day = day_value.isoformat() if hasattr(day_value, "isoformat") else (day_value or hass.config.now().date().isoformat())
+        day = day_value.isoformat() if hasattr(day_value, "isoformat") else (day_value or dt_util.now().date().isoformat())
         target = store.get_day(day)
         target["checklist"] = {k: True for k, _ in CHECKLIST_ITEMS}
         await store.async_save()
@@ -151,7 +152,7 @@ def _register_services(hass: HomeAssistant) -> None:
         domain, service_name = service.split(".", 1)
         if domain != "notify":
             return
-        day = hass.config.now().date().isoformat()
+        day = dt_util.now().date().isoformat()
         d = store.get_day(day)
         adult = store.data.get("settings", {}).get("adult_name", "Papá")
         children = ", ".join(store.data.get("settings", {}).get("children", ["Niñas"]))
