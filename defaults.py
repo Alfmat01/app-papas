@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .const import DAYS, MEALS, SHOPPING_CATEGORIES
+from .const import DAYS, MEALS, SHOPPING_CATEGORIES, PLAN_FIELDS
 
 
 def default_menu() -> dict:
@@ -65,13 +65,16 @@ def default_shopping() -> dict:
 
 def default_data() -> dict:
     return {
-        "plan": {key: "" for key in (
-            "d1_problema", "d1_cuando", "d2_proteinas", "d3_bebida",
-            "d4_rapida1", "d4_rapida2", "d4_rapida3", "d5_pedido",
-            "d6_reinicio", "d7_problema", "d7_bebida",
-        )},
+        "schema_version": 2,
+        "plan": {key: "" for key in PLAN_FIELDS},
         "menu": default_menu(),
         "days": {},
         "shopping": default_shopping(),
-        "settings": {"theme": "system", "active_tab": "hoy"},
+        "settings": {
+            "theme": "system",
+            "active_tab": "hoy",
+            "adult_name": "Papá",
+            "children": ["Niñas"],
+        },
+        "emergency_meals": [],
     }

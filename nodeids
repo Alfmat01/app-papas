@@ -1,0 +1,7 @@
+[
+  "test_defaults.py::test_frontend_exists",
+  "test_defaults.py::test_hacs_is_valid_json",
+  "test_defaults.py::test_manifest_is_valid_json",
+  "test_structure.py::test_frontend_exists",
+  "test_structure.py::test_manifest_metadata"
+]
