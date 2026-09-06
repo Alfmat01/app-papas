@@ -114,30 +114,62 @@ class AppPapasPanel extends HTMLElement {
   }
 
   async save() {
-    this.busy = true;
-    this.render();
-    const res = await haFetch(this._hass, `${API}/data`, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(this.state),
-    });
-    this.state = this.mergeState(this.initialState(), await res.json());
-    this.busy = false;
-    this.render();
+    if (this._saveInFlight) {
+      this._savePending = true;
+      return;
+    }
+    this._saveInFlight = true;
+    try {
+      const res = await haFetch(this._hass, `${API}/data`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(this.state),
+      });
+      if (!res.ok) throw new Error(`Error guardando datos (${res.status})`);
+      this.state = this.mergeState(this.initialState(), await res.json());
+    } catch (err) {
+      this.error = err.message || "No se pudieron guardar los datos.";
+      this.render();
+    } finally {
+      this._saveInFlight = false;
+      if (this._savePending) {
+        this._savePending = false;
+        this.save();
+      }
+    }
+  }
+
+  scheduleSaveDay() {
+    clearTimeout(this._daySaveTimer);
+    this._daySaveTimer = setTimeout(() => this.saveDay(), 500);
   }
 
   async saveDay() {
     this.state ||= this.initialState();
     this.state.days = this.state.days || {};
-    this.busy = true;
-    const res = await haFetch(this._hass, `${API}/day/${this.day}`, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(this.state.days[this.day] || {}),
-    });
-    this.state.days[this.day] = await res.json();
-    this.busy = false;
-    this.render();
+    if (this._daySaveInFlight) {
+      this._daySavePending = true;
+      return;
+    }
+    this._daySaveInFlight = true;
+    try {
+      const res = await haFetch(this._hass, `${API}/day/${this.day}`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(this.state.days[this.day] || {}),
+      });
+      if (!res.ok) throw new Error(`Error guardando el día (${res.status})`);
+      this.state.days[this.day] = await res.json();
+    } catch (err) {
+      this.error = err.message || "No se pudo guardar el día.";
+      this.render();
+    } finally {
+      this._daySaveInFlight = false;
+      if (this._daySavePending) {
+        this._daySavePending = false;
+        this.saveDay();
+      }
+    }
   }
 
   setTab(tab) { this.tab = tab; this.state.settings.active_tab = tab; this.save(); }
@@ -255,9 +287,9 @@ class AppPapasPanel extends HTMLElement {
   bind() {
     this.shadowRoot.querySelectorAll("[data-tab]").forEach(el=>el.onclick=()=>{this.tab=el.dataset.tab; this.state.settings.active_tab=this.tab; this.render(); this.save();});
     const date=this.shadowRoot.querySelector("#date"); if(date) date.onchange=()=>{this.day=date.value; this.render();};
-    this.shadowRoot.querySelectorAll("[data-day-field]").forEach(el=>el.oninput=()=>{ this.dayData()[el.dataset.dayField]=el.value; clearTimeout(this.t); this.t=setTimeout(()=>this.saveDay(),350); });
-    this.shadowRoot.querySelectorAll("[data-plan]").forEach(el=>el.oninput=()=>{this.state.plan[el.dataset.plan]=el.value; clearTimeout(this.t); this.t=setTimeout(()=>this.save(),350);});
-    this.shadowRoot.querySelectorAll("[data-menu]").forEach(el=>el.oninput=()=>{const [d,m,p]=el.dataset.menu.split("|");this.state.menu[d][m][p]=el.value;clearTimeout(this.t);this.t=setTimeout(()=>this.save(),350);});
+    this.shadowRoot.querySelectorAll("[data-day-field]").forEach(el=>el.oninput=()=>{ this.dayData()[el.dataset.dayField]=el.value; this.scheduleSaveDay(); });
+    this.shadowRoot.querySelectorAll("[data-plan]").forEach(el=>el.oninput=()=>{this.state.plan[el.dataset.plan]=el.value; clearTimeout(this._saveTimer); this._saveTimer=setTimeout(()=>this.save(),500);});
+    this.shadowRoot.querySelectorAll("[data-menu]").forEach(el=>el.oninput=()=>{const [d,m,p]=el.dataset.menu.split("|");this.state.menu[d][m][p]=el.value; clearTimeout(this._saveTimer); this._saveTimer=setTimeout(()=>this.save(),500);});
     this.shadowRoot.querySelectorAll("[data-shop]").forEach(el=>el.onchange=()=>{const [cat,id]=el.dataset.shop.split("|");this.toggleShop(cat,id);});
     this.shadowRoot.querySelectorAll("[data-check]").forEach(el=>el.onchange=()=>this.toggleCheck(el.dataset.check));
     const add=this.shadowRoot.querySelector("#add-product"); if(add) add.onclick=()=>this.addProduct();
