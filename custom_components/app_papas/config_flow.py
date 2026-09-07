@@ -10,6 +10,7 @@ from homeassistant.core import callback
 from .const import (
     DOMAIN, DEFAULT_TITLE, DEFAULT_ADULT_NAME, DEFAULT_CHILDREN,
     CONF_ADULT_NAME, CONF_CHILDREN, CONF_NOTIFICATIONS, CONF_NOTIFY_SERVICE,
+    CONF_MEALDB_API_KEY, DEFAULT_MEALDB_API_KEY,
 )
 
 
@@ -28,6 +29,7 @@ class AppPapasConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_CHILDREN: user_input[CONF_CHILDREN],
                     CONF_NOTIFICATIONS: user_input[CONF_NOTIFICATIONS],
                     CONF_NOTIFY_SERVICE: user_input.get(CONF_NOTIFY_SERVICE, ""),
+                    CONF_MEALDB_API_KEY: user_input.get(CONF_MEALDB_API_KEY, DEFAULT_MEALDB_API_KEY) or DEFAULT_MEALDB_API_KEY,
                 },
             )
         return self.async_show_form(
@@ -38,6 +40,7 @@ class AppPapasConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Required(CONF_CHILDREN, default=DEFAULT_CHILDREN): str,
                 vol.Required(CONF_NOTIFICATIONS, default=False): bool,
                 vol.Optional(CONF_NOTIFY_SERVICE, default=""): str,
+                vol.Optional(CONF_MEALDB_API_KEY, default=DEFAULT_MEALDB_API_KEY): str,
             }),
         )
 
@@ -63,5 +66,6 @@ class AppPapasOptionsFlow(config_entries.OptionsFlow):
                 vol.Required(CONF_CHILDREN, default=children): str,
                 vol.Required(CONF_NOTIFICATIONS, default=current.get(CONF_NOTIFICATIONS, False)): bool,
                 vol.Optional(CONF_NOTIFY_SERVICE, default=current.get(CONF_NOTIFY_SERVICE, "")): str,
+                vol.Optional(CONF_MEALDB_API_KEY, default=current.get(CONF_MEALDB_API_KEY, DEFAULT_MEALDB_API_KEY)): str,
             }),
         )

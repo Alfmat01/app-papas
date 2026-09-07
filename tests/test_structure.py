@@ -9,7 +9,7 @@ def test_manifest_metadata():
     assert manifest["config_flow"] is True
     assert manifest["documentation"] == "https://github.com/Alfmat01/app-papas"
     assert manifest["issue_tracker"] == "https://github.com/Alfmat01/app-papas/issues"
-    assert manifest["version"] == "1.2.0"
+    assert manifest["version"] == "1.3.0"
 
 def test_frontend_exists():
     assert (ROOT / "custom_components/app_papas/frontend/app-papas.js").exists()
@@ -31,4 +31,6 @@ def test_frontend_has_recipe_tab_and_quantity_copy():
     text = (ROOT / "custom_components/app_papas/frontend/app-papas.js").read_text()
     assert '["recetas","📖 Recetas"]' in text
     assert 'data-recipe=' in text
-    assert 'Cantidad' in text or 'cantidades' in text
+    assert 'cantidades' in text
+    assert 'Buscar' in text
+    assert 'TheMealDB' in text

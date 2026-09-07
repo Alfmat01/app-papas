@@ -2,9 +2,9 @@ from __future__ import annotations
 
 DOMAIN = "app_papas"
 NAME = "Alimentación para Papás"
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 STORAGE_VERSION = 1
-DATA_SCHEMA_VERSION = 2
+DATA_SCHEMA_VERSION = 3
 STORAGE_KEY = DOMAIN
 PANEL_PATH = DOMAIN
 STATIC_URL = f"/api/{DOMAIN}/static"
@@ -15,9 +15,17 @@ CONF_ADULT_NAME = "adult_name"
 CONF_CHILDREN = "children"
 CONF_NOTIFICATIONS = "notifications_enabled"
 CONF_NOTIFY_SERVICE = "notify_service"
+CONF_THEME = "theme"
+CONF_THEME_OPTIONS = "theme_options"
+CONF_THEMENAME = "theme_name"
+CONF_THEME_AUTO = "theme_auto"
+CONF_MEALDB_API_KEY = "mealdb_api_key"
 DEFAULT_TITLE = "Alimentación familiar"
 DEFAULT_ADULT_NAME = "Papá"
 DEFAULT_CHILDREN = "Niñas"
+DEFAULT_MEALDB_API_KEY = "1"
+
+MEALDB_BASE_URL = "https://www.themealdb.com/api/json/v1"
 
 DAYS = [
     ("lunes", "Lunes"), ("martes", "Martes"), ("miercoles", "Miércoles"),

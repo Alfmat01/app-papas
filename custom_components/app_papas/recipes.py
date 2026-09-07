@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import re
 from typing import Any
 
 
@@ -153,3 +154,69 @@ def default_recipes() -> list[dict[str, Any]]:
 
 def recipe_map(recipes: list[dict[str, Any]] | None = None) -> dict[str, dict[str, Any]]:
     return {str(r["id"]): r for r in (recipes if recipes is not None else default_recipes())}
+
+
+def normalize_external_meal(meal: dict[str, Any]) -> dict[str, Any]:
+    """Normalize a TheMealDB meal into the App Papás recipe schema."""
+    ingredients: list[dict[str, Any]] = []
+    for index in range(1, 21):
+        name = str(meal.get(f"strIngredient{index}") or "").strip()
+        measure = str(meal.get(f"strMeasure{index}") or "").strip()
+        if not name:
+            continue
+        qty = 1.0
+        unit = "ud"
+        raw = measure.replace(",", ".")
+        match = re.match(r"^\s*(\d+(?:\.\d+)?)\s*(kg|g|mg|l|ml|cl|oz|lb|tbsp|tsp|cup|cups|pcs|piece|pieces|slice|slices|can|cans|tin|tins|jar|jars|pack|packs|bunch|bunches)?\b", raw, re.I)
+        if match:
+            qty = float(match.group(1))
+            unit = match.group(2) or "ud"
+        elif raw:
+            # Keep non-numeric measures (e.g. “2 cloves”, “to taste”, “a handful”) visible.
+            parts = raw.split()
+            if len(parts) >= 2:
+                try:
+                    qty = float(parts[0])
+                    unit = " ".join(parts[1:])
+                except ValueError:
+                    qty = 1.0
+                    unit = raw
+            else:
+                unit = raw
+        n = name.casefold()
+        if any(x in n for x in ("chicken", "beef", "pork", "turkey", "lamb", "fish", "salmon", "tuna", "egg", "ham", "bacon", "sausage", "prawn", "shrimp")):
+            ing_category = "proteina"
+        elif any(x in n for x in ("rice", "pasta", "bread", "potato", "flour", "oat", "noodle", "tortilla")):
+            ing_category = "carbohidratos"
+        elif any(x in n for x in ("broccoli", "spinach", "carrot", "tomato", "onion", "pepper", "lettuce", "avocado", "apple", "banana", "lemon", "lime", "vegetable", "salad")):
+            ing_category = "verduras_frutas"
+        else:
+            ing_category = "extras"
+        ingredients.append({
+            "name": name,
+            "qty": qty,
+            "unit": unit,
+            "measure": measure,
+            "category": ing_category,
+            "optional": False,
+        })
+    category = str(meal.get("strCategory") or "Comida")
+    return {
+        "id": f"mealdb_{meal.get('idMeal')}",
+        "source_id": str(meal.get("idMeal") or ""),
+        "source": "online",
+        "source_name": "TheMealDB",
+        "name": str(meal.get("strMeal") or "Receta"),
+        "category": category,
+        "area": str(meal.get("strArea") or ""),
+        "description": f"Receta de {category.lower()} de cocina {str(meal.get('strArea') or '').lower()}.".strip(" ."),
+        "prep_minutes": 0,
+        "cook_minutes": 0,
+        "servings": 1,
+        "ingredients": ingredients,
+        "steps": [x.strip() for x in re.split(r"\r?\n+", str(meal.get("strInstructions") or "")) if x.strip()],
+        "aliases": [str(meal.get("strMeal") or "")],
+        "image": str(meal.get("strMealThumb") or ""),
+        "youtube": str(meal.get("strYoutube") or ""),
+        "source_url": "https://www.themealdb.com/",
+    }

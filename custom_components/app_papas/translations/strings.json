@@ -9,7 +9,8 @@
           "adult_name": "Nombre del adulto",
           "children": "Nombres de niños, separados por comas",
           "notifications_enabled": "Activar notificaciones",
-          "notify_service": "Servicio de notificación (por ejemplo notify.mobile_app_telefono)"
+          "notify_service": "Servicio de notificación (por ejemplo notify.mobile_app_telefono)",
+          "mealdb_api_key": "Clave API de TheMealDB (deja 1 para el acceso de prueba)"
         }
       }
     },
@@ -27,7 +28,8 @@
           "adult_name": "Nombre del adulto",
           "children": "Nombres de niños, separados por comas",
           "notifications_enabled": "Activar notificaciones",
-          "notify_service": "Servicio de notificación"
+          "notify_service": "Servicio de notificación",
+          "mealdb_api_key": "Clave API de TheMealDB"
         }
       }
     }

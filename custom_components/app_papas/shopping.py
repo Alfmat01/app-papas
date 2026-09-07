@@ -148,10 +148,15 @@ def _recipe_items(store: Any) -> list[dict[str, Any]]:
             recipe = recipes.get(str(rid)) if rid else None
             if not recipe:
                 continue
+            servings = float(recipe.get("servings", 1) or 1)
+            multiplier = portions / servings
             for ing in recipe.get("ingredients", []):
                 if ing.get("optional"):
                     continue
-                result.append({**ing, "qty": float(ing.get("qty", 0)) * portions, "source": "recipe"})
+                qty = ing.get("qty")
+                if qty is None:
+                    qty = 1
+                result.append({**ing, "qty": float(qty) * multiplier, "source": "recipe"})
     return result
 
 

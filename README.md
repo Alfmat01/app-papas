@@ -86,3 +86,21 @@ type: custom:app-papas-card
 ## Nota
 
 Las recetas incluidas son una base práctica para la aplicación y no sustituyen recomendaciones médicas o nutricionales personalizadas.
+
+
+## Recetas online
+
+La pestaña **Recetas** incluye un buscador integrado con TheMealDB. Permite buscar por nombre, categoría, cocina e ingrediente, consultar la receta completa e importarla a la biblioteca local de App Papás. La API pública de TheMealDB ofrece búsqueda por nombre, filtros por categoría/área/ingrediente y consulta de detalle. Para desarrollo y proyectos personales se puede usar la clave de prueba `1`; TheMealDB indica que los despliegues públicos deben usar una clave de producción de supporter y respetar sus condiciones de uso. [TheMealDB API Guide](https://themealdb.com/docs_api_guide.php)
+
+
+## 1.3.0 — Recetas online
+
+- Buscador de recetas con texto, categoría, cocina e ingrediente.
+- Resultados de **TheMealDB** desde el backend de Home Assistant.
+- Vista de receta completa con ingredientes, medidas, preparación, imagen y vídeo cuando existe.
+- Importación de recetas online a la biblioteca local de App Papás.
+- Recetas propias creadas desde la interfaz.
+- Asociación de recetas al menú semanal para alimentar el cálculo de la lista de compra.
+- La API usa la clave configurable en el flujo de configuración; por defecto se utiliza la clave de prueba `1`. TheMealDB indica que la API V1 permite búsqueda por nombre, consulta por ID y filtros por categoría, área e ingrediente, y que para una publicación pública debe usarse una clave de producción de supporter y respetarse sus condiciones de uso.
+
+Fuente de recetas online: **TheMealDB** — https://www.themealdb.com/

@@ -44,6 +44,7 @@ class AppPapasStore:
         settings.setdefault("children", ["Niñas"])
         settings.setdefault("notifications_enabled", False)
         settings.setdefault("notify_service", "")
+        settings.setdefault("mealdb_api_key", "1")
         data.setdefault("emergency_meals", [])
         if not isinstance(data.get("recipes"), list) or not data.get("recipes"):
             data["recipes"] = default_recipes()
