@@ -14,6 +14,7 @@ from homeassistant.util import dt as dt_util
 from .const import API_URL, CONF_MEALDB_API_KEY, DEFAULT_MEALDB_API_KEY, DOMAIN
 from .recipes import normalize_external_meal
 from .shopping import sync_menu_shopping
+from .translation import AREA_ES, CATEGORY_ES, quick_translate, translate_recipe, translate_text, translate_label
 from .storage import AppPapasStore
 
 
@@ -161,7 +162,10 @@ class AppPapasRecipeSearchView(HomeAssistantView):
                     params["a"] = area
                     url = f"{base}/filter.php"
                 else:
-                    params["s"] = query or category or ingredient or area
+                    search_term = query or category or ingredient or area
+                    if search_term:
+                        translated_query = await translate_text(session, search_term)
+                        params["s"] = translated_query if translated_query and translated_query.casefold() != search_term.casefold() else search_term
                     url = f"{base}/search.php"
                 async with session.get(url, params=params, timeout=15) as resp:
                     if resp.status == 200:
@@ -189,8 +193,9 @@ class AppPapasRecipeSearchView(HomeAssistantView):
     def _summary_remote(meal: dict[str, Any]) -> dict[str, Any]:
         return {
             "id": f"mealdb_{meal.get('idMeal')}", "source_id": str(meal.get("idMeal", "")),
-            "name": meal.get("strMeal", ""), "category": meal.get("strCategory", ""),
-            "area": meal.get("strArea", ""), "description": "", "prep_minutes": 0,
+            "name": quick_translate(str(meal.get("strMeal", ""))), "original_name": meal.get("strMeal", ""),
+            "category": translate_label(str(meal.get("strCategory", "")), CATEGORY_ES), "original_category": meal.get("strCategory", ""),
+            "area": translate_label(str(meal.get("strArea", "")), AREA_ES), "original_area": meal.get("strArea", ""), "description": "", "prep_minutes": 0,
             "cook_minutes": 0, "servings": 1, "image": meal.get("strMealThumb", ""),
             "ingredients_count": 0, "source": "online",
         }
@@ -223,7 +228,12 @@ class AppPapasRecipeDetailView(HomeAssistantView):
                 meal = (payload.get("meals") or [None])[0]
                 if not meal:
                     return self.json_message("Receta no encontrada", HTTPStatus.NOT_FOUND)
-                return self.json(normalize_external_meal(meal))
+                normalized = normalize_external_meal(meal)
+                cache = hass.data.setdefault(DOMAIN, {}).setdefault("translation_cache", {})
+                cache_key = f"mealdb:{meal_id}:es"
+                if cache_key not in cache:
+                    cache[cache_key] = await translate_recipe(session, normalized)
+                return self.json(cache[cache_key])
         except (ClientError, TimeoutError, ValueError):
             return self.json_message("No se pudo consultar TheMealDB", HTTPStatus.BAD_GATEWAY)
 

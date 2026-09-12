@@ -68,3 +68,5 @@ SENSOR_TYPES = {
     "today_score": "Puntuación de hoy",
     "next_meal": "Próxima comida",
 }
+
+TRANSLATION_URL = "https://api.mymemory.translated.net/get"

@@ -104,3 +104,7 @@ La pestaña **Recetas** incluye un buscador integrado con TheMealDB. Permite bus
 - La API usa la clave configurable en el flujo de configuración; por defecto se utiliza la clave de prueba `1`. TheMealDB indica que la API V1 permite búsqueda por nombre, consulta por ID y filtros por categoría, área e ingrediente, y que para una publicación pública debe usarse una clave de producción de supporter y respetarse sus condiciones de uso.
 
 Fuente de recetas online: **TheMealDB** — https://www.themealdb.com/
+
+## Recetas en español
+
+Las recetas de TheMealDB se normalizan y se traducen al español cuando se abre su ficha. La aplicación conserva también los textos originales y guarda en caché la traducción durante la sesión de Home Assistant. La traducción utiliza el servicio MyMemory; si no está disponible, se aplica un diccionario local para términos culinarios frecuentes y la receta sigue siendo utilizable.
